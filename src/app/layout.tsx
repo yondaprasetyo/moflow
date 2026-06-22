@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"; // Tambahkan Viewport di sini
 import "./global.css";
+import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
   title: "FlowTrack — Money Tracker",
@@ -15,8 +16,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="id">
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

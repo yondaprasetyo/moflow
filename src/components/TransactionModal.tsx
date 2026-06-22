@@ -48,6 +48,11 @@ const CATEGORY_TRANSLATIONS: Record<string, { id: string; en: string }> = {
   other: { id: "Lainnya", en: "Other" },
 };
 
+const formatCurrencyInput = (value: string) => {
+  const numeric = value.replace(/[^0-9]/g, "");
+  return numeric.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
 export default function TransactionModal({ onClose, onSave, onDelete, initial, currentLang = "id" }: Props) {
   const t = translations[currentLang];
   const [type, setType] = useState<TransactionType>(initial?.type ?? "expense");
@@ -66,14 +71,20 @@ export default function TransactionModal({ onClose, onSave, onDelete, initial, c
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/\./g, ""); // Hapus titik untuk validasi
+    if (rawValue === "" || /^[0-9]+$/.test(rawValue)) {
+      setAmount(formatCurrencyInput(rawValue));
+    }
+  };
+
   async function handleSubmit() {
-    const amt = parseFloat(amount);
+    // Hilangkan titik sebelum dikirim ke database
+    const amt = parseFloat(amount.replace(/\./g, ""));
     if (!amt || amt <= 0) return;
     setSaving(true);
     
-    // Ambil default nama kategori berdasarkan bahasa jika catatan kosong
     const defaultNote = CATEGORY_TRANSLATIONS[category]?.[currentLang] || category;
-    
     await onSave({ type, amount: amt, category, note: note.trim() || defaultNote, date });
     onClose();
   }
@@ -107,12 +118,12 @@ export default function TransactionModal({ onClose, onSave, onDelete, initial, c
         <div className="form-group">
           <label className="form-label">{t.amount}</label>
           <input
-            type="number"
+            type="text" // Gunakan text agar bisa diformat dengan titik
             inputMode="numeric"
             className="form-input amount-input"
             placeholder="0"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={handleAmountChange} // Gunakan handler baru
           />
         </div>
         

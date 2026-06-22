@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { format } from "date-fns";
 import {
   subscribeToTransactions,
   subscribeToBudgets,
@@ -11,38 +10,38 @@ import {
   deleteBudget,
 } from "@/lib/db";
 import { Transaction, Budget, MonthSummary, Category } from "@/types";
+import { useAuth } from "@/context/AuthContext"; // Import context auth
 
 export function useMoneyData(month: string) {
+  const { user } = useAuth(); // Ambil data user
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
-    let txLoaded = false;
-    let bdLoaded = false;
 
-    const checkDone = () => {
-      if (txLoaded && bdLoaded) setLoading(false);
-    };
-
-    const unsubTx = subscribeToTransactions(month, (txs) => {
+    // Gunakan listener tanpa menunggu status "loaded" yang kaku
+    const unsubTx = subscribeToTransactions(month, user.uid, (txs) => {
       setTransactions(txs);
-      txLoaded = true;
-      checkDone();
+      setLoading(false); // Langsung stop loading saat data diterima (meski kosong [])
     });
 
-    const unsubBd = subscribeToBudgets(month, (bds) => {
+    const unsubBd = subscribeToBudgets(month, user.uid, (bds) => {
       setBudgets(bds);
-      bdLoaded = true;
-      checkDone();
+      setLoading(false);
     });
 
     return () => {
       unsubTx();
       unsubBd();
     };
-  }, [month]);
+  }, [month, user]);
 
   const summary: MonthSummary = {
     totalIncome: transactions
@@ -60,11 +59,12 @@ export function useMoneyData(month: string) {
     summary.byCategory[t.category] = (summary.byCategory[t.category] ?? 0) + t.amount;
   }
 
+  // Fungsi-fungsi handler disesuaikan dengan user.uid
   const handleAddTransaction = useCallback(
     async (data: Omit<Transaction, "id" | "createdAt">) => {
-      await addTransaction(data);
+      if (user) await addTransaction(data, user.uid);
     },
-    []
+    [user]
   );
 
   const handleUpdateTransaction = useCallback(
@@ -78,9 +78,15 @@ export function useMoneyData(month: string) {
     await deleteTransaction(id);
   }, []);
 
-  const handleSetBudget = useCallback(async (category: Category, limit: number) => {
-    await setBudget({ category, limit, month });
-  }, [month]);
+  const handleSetBudget = useCallback(
+    async (category: Category, limit: number) => {
+      if (user) {
+        // TypeScript sekarang mengenali userId di dalam object yang dikirim
+        await setBudget({ category, limit, month, userId: user.uid }, user.uid);
+      }
+    },
+    [month, user]
+  );
 
   const handleDeleteBudget = useCallback(async (id: string) => {
     await deleteBudget(id);

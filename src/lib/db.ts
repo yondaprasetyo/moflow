@@ -9,7 +9,6 @@ import {
   orderBy,
   getDocs,
   onSnapshot,
-  Timestamp,
   QuerySnapshot,
   DocumentData,
 } from "firebase/firestore";
@@ -20,12 +19,12 @@ import { Transaction, Budget } from "@/types";
 
 const TRANSACTIONS = "transactions";
 
-export async function addTransaction(data: Omit<Transaction, "id" | "createdAt">) {
-  const ref = await addDoc(collection(db, TRANSACTIONS), {
+export async function addTransaction(data: Omit<Transaction, "id" | "createdAt">, uid: string) {
+  await addDoc(collection(db, TRANSACTIONS), {
     ...data,
+    userId: uid, // Menambahkan ID pengguna
     createdAt: new Date().toISOString(),
   });
-  return ref.id;
 }
 
 export async function updateTransaction(id: string, data: Partial<Omit<Transaction, "id">>) {
@@ -37,7 +36,8 @@ export async function deleteTransaction(id: string) {
 }
 
 export function subscribeToTransactions(
-  month: string, // "YYYY-MM"
+  month: string,
+  uid: string, // Tambahkan uid
   callback: (txs: Transaction[]) => void
 ) {
   const startDate = `${month}-01`;
@@ -45,6 +45,7 @@ export function subscribeToTransactions(
 
   const q = query(
     collection(db, TRANSACTIONS),
+    where("userId", "==", uid), // Filter data user
     where("date", ">=", startDate),
     where("date", "<=", endDate),
     orderBy("date", "desc")
@@ -59,27 +60,14 @@ export function subscribeToTransactions(
   });
 }
 
-export async function getTransactionsByDateRange(
-  startDate: string,
-  endDate: string
-): Promise<Transaction[]> {
-  const q = query(
-    collection(db, TRANSACTIONS),
-    where("date", ">=", startDate),
-    where("date", "<=", endDate),
-    orderBy("date", "desc")
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Transaction, "id">) }));
-}
-
 // ─── Budgets ─────────────────────────────────────────────────────────────────
 
 const BUDGETS = "budgets";
 
-export async function setBudget(data: Omit<Budget, "id">) {
+export async function setBudget(data: Omit<Budget, "id">, uid: string) {
   const q = query(
     collection(db, BUDGETS),
+    where("userId", "==", uid), // Filter berdasarkan user
     where("category", "==", data.category),
     where("month", "==", data.month)
   );
@@ -89,6 +77,8 @@ export async function setBudget(data: Omit<Budget, "id">) {
     await updateDoc(doc(db, BUDGETS, snap.docs[0].id), { limit: data.limit });
     return snap.docs[0].id;
   }
+  
+  // Sekarang data sudah memiliki userId dari interface Budget yang baru
   const ref = await addDoc(collection(db, BUDGETS), data);
   return ref.id;
 }
@@ -99,9 +89,14 @@ export async function deleteBudget(id: string) {
 
 export function subscribeToBudgets(
   month: string,
+  uid: string, // Tambahkan uid
   callback: (budgets: Budget[]) => void
 ) {
-  const q = query(collection(db, BUDGETS), where("month", "==", month));
+  const q = query(
+    collection(db, BUDGETS), 
+    where("userId", "==", uid), // Filter data user
+    where("month", "==", month)
+  );
   return onSnapshot(q, (snap) => {
     const budgets: Budget[] = snap.docs.map((d) => ({
       id: d.id,

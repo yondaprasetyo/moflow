@@ -49,7 +49,8 @@ export interface Budget {
   id: string;
   category: Category;
   limit: number;
-  month: string; // "YYYY-MM"
+  month: string;
+  userId: string;
 }
 
 export interface MonthSummary {

@@ -20,6 +20,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightIcon from '@mui/icons-material/ChevronRightRounded';
 import FileDownloadIcon from '@mui/icons-material/FileDownloadRounded';
 import SavingsRoundedIcon from '@mui/icons-material/SavingsRounded';
+import { changeUserPassword, logOut } from "@/lib/firebase";
 
 
 type Page = "dashboard" | "transactions" | "analytics" | "budgets" | "profile";
@@ -172,6 +173,19 @@ export default function Dashboard() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [tempName, setTempName] = useState("");
   const [tempBio, setTempBio] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState(""); 
+
+  const handleChangePassword = async () => {
+    try {
+      await changeUserPassword(newPassword);
+      alert("Password berhasil diubah!");
+      setShowPasswordModal(false);
+      setNewPassword("");
+    } catch (error: any) {
+      alert("Gagal: " + error.message);
+    }
+  };
 
   const { transactions, budgets, summary, loading, addTransaction, updateTransaction, deleteTransaction, setBudget, deleteBudget } = useMoneyData(currentMonth);
 
@@ -959,15 +973,6 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* User Info Header Card */}
-                {/* <div className="card ios-card user-hero">
-                  <div className="avatar-circle">YP</div>
-                  <div className="user-meta">
-                    <h2>Yonda Eko Prasetyo</h2>
-                    <p>Spatial Data Analyst & Researcher</p>
-                  </div>
-                </div> */}
-
                 {/* Settings System Grouped List */}
                 <div className="ios-settings-group">
                   <div className="group-title">{words.preferences}</div>
@@ -1009,6 +1014,30 @@ export default function Dashboard() {
                     <button className="ios-list-action-btn" onClick={() => setShowExportModal(true)}>
                       <span className="action-icon"><FileDownloadIcon /></span>
                       {words.exportReport}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="ios-settings-group" style={{ marginTop: '10px' }}>
+                  <div className="card ios-card grouped-list-card action-card">
+                    <button 
+                      className="ios-list-action-btn" 
+                      onClick={() => setShowPasswordModal(true)} 
+                      style={{ width: '100%', justifyContent: 'center' }}
+                    >
+                      Ubah Password
+                    </button>
+                  </div>
+                </div>
+
+                <div className="ios-settings-group" style={{ marginTop: '20px' }}>
+                  <div className="card ios-card grouped-list-card action-card">
+                    <button 
+                      className="ios-list-action-btn" 
+                      onClick={() => logOut()} 
+                      style={{ color: '#ff3b30', width: '100%', justifyContent: 'center' }}
+                    >
+                      Keluar (Logout)
                     </button>
                   </div>
                 </div>
@@ -1225,6 +1254,30 @@ export default function Dashboard() {
               }}
             >
               Simpan Profil
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showPasswordModal && (
+        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowPasswordModal(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <h2 className="modal-title">Ubah Password</h2>
+              <button className="modal-close" onClick={() => setShowPasswordModal(false)}>✕</button>
+            </div>
+            <div className="form-group" style={{ marginBottom: 20 }}>
+              <label className="form-label">Password Baru</label>
+              <input 
+                className="form-input" 
+                type="password" 
+                placeholder="Masukkan password baru"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <button className="btn btn-primary ios-btn-primary" onClick={handleChangePassword}>
+              Simpan Password
             </button>
           </div>
         </div>
