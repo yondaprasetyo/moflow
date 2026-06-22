@@ -105,7 +105,6 @@ const NAV = [
   { id: "transactions", labelKey: "transactions", icon: <ReceiptLongIcon fontSize="small" /> },
   { id: "analytics", labelKey: "analytics", icon: <AnalyticsIcon fontSize="small" /> },
   { id: "budgets", labelKey: "budgets", icon: <PieChartIcon fontSize="small" /> },
-  { id: "profile", labelKey: "profile", icon: <PersonIcon fontSize="small" /> },
 ] as const;
 
 const iOS_COLORS = ["#007AFF", "#34C759", "#FF3B30", "#FF9500", "#AF52DE", "#5AC8FA", "#FF2D55", "#4CD964"];
@@ -126,35 +125,14 @@ const CATEGORY_META: Record<string, { icon: string; label: { id: string; en: str
   other: { icon: "💬", label: { id: "Lainnya", en: "Other" } },
 };
 
-const EXPENSE_CATEGORIES = ["food", "transport", "housing", "utilities", "fun", "health", "shopping", "education", "travel", "other"];
-const INCOME_CATEGORIES = ["salary", "freelance", "investment", "other"];
-
 export default function Dashboard() {
   const [page, setPage] = useState<Page>("dashboard");
   const [currentMonth, setCurrentMonth] = useState(format(new Date(), "yyyy-MM"));
   const [showAdd, setShowAdd] = useState(false);
   const [editTx, setEditTx] = useState<Transaction | null>(null);
   const [showBudget, setShowBudget] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      // Sembunyikan jika scroll ke bawah dan melewati batas toleransi 50px
-      if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
-
-  // User Preferences States (iOS Style Settings)
+  // User Preferences States
   const [theme, setTheme] = useState<Theme>("light");
   const [language, setLanguage] = useState<Language>("id");
   const [currency, setCurrency] = useState<Currency>("IDR");
@@ -167,7 +145,7 @@ export default function Dashboard() {
   const [exportIncludeTx, setExportIncludeTx] = useState(true);
   const [exportIncludeAnalytics, setExportIncludeAnalytics] = useState(true);
 
-  // State untuk Profil User
+  // State Profil User
   const [userName, setUserName] = useState("Yonda Eko Prasetyo");
   const [userBio, setUserBio] = useState("Spatial Data Analyst & Researcher");
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -189,7 +167,7 @@ export default function Dashboard() {
 
   const { transactions, budgets, summary, loading, addTransaction, updateTransaction, deleteTransaction, setBudget, deleteBudget } = useMoneyData(currentMonth);
 
-  // Sinkronisasi class tema ke HTML root element
+  // Sinkronisasi tema HTML
   useEffect(() => {
     const root = window.document.documentElement;
     if (theme === "dark") {
@@ -201,7 +179,6 @@ export default function Dashboard() {
 
   const words = TRANSLATIONS[language];
 
-  // Fungsi untuk mengambil icon dan label sesuai bahasa yang aktif
   const getCategoryMeta = useCallback((categoryId: string) => {
     const meta = CATEGORY_META[categoryId] || CATEGORY_META["other"];
     return {
@@ -210,7 +187,6 @@ export default function Dashboard() {
     };
   }, [language]);
 
-  // Format Mata Uang Adaptif Dinamis
   const formatCurrency = (n: number) => {
     const config = {
       USD: { locale: "en-US", symbol: "USD" },
@@ -224,7 +200,6 @@ export default function Dashboard() {
     }).format(n);
   };
 
-  // Format angka ringkas untuk sumbu Y pada grafik (Contoh: 15.000 -> 15 rb)
   const formatCompact = (n: number) => {
     return new Intl.NumberFormat(language === "id" ? "id-ID" : "en-US", {
       notation: "compact",
@@ -238,26 +213,17 @@ export default function Dashboard() {
     return format(dateObj, "MMMM yyyy", { locale: language === "id" ? localeID : localeEN });
   }, [currentMonth, language]);
 
-  // Pengolah Laporan PDF (Metode Print Sempurna dengan CSS Media Laporan)
-  const handleExportPDF = () => {
-    window.print();
-  };
-
-  // Chart data pemrosesan aktivitas harian
   const dailyData = useMemo(() => {
-    // Cari tahu bulan ini ada berapa hari (28/29/30/31)
     const [year, month] = currentMonth.split('-');
     const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
     
     const map: Record<string, { income: number; expense: number }> = {};
     
-    // Inisialisasi semua hari dalam bulan tersebut dengan angka 0
     for (let i = 1; i <= daysInMonth; i++) {
       const dayStr = i.toString().padStart(2, '0');
       map[dayStr] = { income: 0, expense: 0 };
     }
 
-    // Masukkan data transaksi yang ada
     for (const t of transactions) {
       const day = t.date.slice(8, 10);
       if (map[day]) {
@@ -270,15 +236,12 @@ export default function Dashboard() {
       .map(([day, v]) => ({ day: parseInt(day), ...v }));
   }, [transactions, currentMonth]);
 
-  // Logika Pemrosesan Transaksi (Filter -> Group by Date -> Sort)
   const processedTransactions = useMemo(() => {
-    // 1. Filter
     let filtered = transactions;
     if (txFilter !== "all") {
       filtered = filtered.filter((t) => t.type === txFilter);
     }
 
-    // 2. Group by Date
     const groups: Record<string, { date: string; items: Transaction[]; totalIn: number; totalOut: number }> = {};
     filtered.forEach((t) => {
       if (!groups[t.date]) groups[t.date] = { date: t.date, items: [], totalIn: 0, totalOut: 0 };
@@ -287,22 +250,19 @@ export default function Dashboard() {
       else groups[t.date].totalOut += t.amount;
     });
 
-    // 3. Ubah jadi Array dan urutkan grup dari tanggal terbaru ke terlama
     const groupedArray = Object.values(groups).sort((a, b) => b.date.localeCompare(a.date));
 
-    // 4. Urutkan item di dalam masing-masing grup (Tertinggi / Terendah)
     groupedArray.forEach((group) => {
       group.items.sort((a, b) => {
         if (txSort === "highest") return b.amount - a.amount;
         if (txSort === "lowest") return a.amount - b.amount;
-        return 0; // "newest" akan mengikuti urutan asli (terbaru)
+        return 0; 
       });
     });
 
     return groupedArray;
   }, [transactions, txFilter, txSort]);
 
-  // Kategori data breakdown
   const categoryData = useMemo(() => {
     return Object.entries(summary.byCategory)
       .filter(([cat]) => transactions.find((t) => t.category === cat && t.type === "expense"))
@@ -325,16 +285,12 @@ export default function Dashboard() {
     });
   }, [dailyData]);
 
-  // Menghitung sisa hari di bulan yang sedang dipilih
   const daysRemaining = useMemo(() => {
     const today = new Date();
     const currentSelected = new Date(`${currentMonth}-01`);
-    
-    // Jika melihat bulan lalu/depan, tidak relevan menampilkan sisa hari
     if (today.getMonth() !== currentSelected.getMonth() || today.getFullYear() !== currentSelected.getFullYear()) {
       return null; 
     }
-
     const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     return lastDayOfMonth - today.getDate();
   }, [currentMonth]);
@@ -347,16 +303,13 @@ export default function Dashboard() {
     return result;
   }, [transactions]);
 
-  // Menghitung ringkasan total seluruh anggaran
   const totalBudgetSummary = useMemo(() => {
     let totalLimit = 0;
     let totalSpent = 0;
-
     budgets.forEach(b => {
       totalLimit += b.limit;
       totalSpent += (expenseByCategory[b.category] ?? 0);
     });
-
     return { totalLimit, totalSpent };
   }, [budgets, expenseByCategory]);
 
@@ -364,48 +317,96 @@ export default function Dashboard() {
     ? Math.round(((summary.totalIncome - summary.totalExpense) / summary.totalIncome) * 100)
     : 0;
 
-  // Filter khusus untuk data yang akan dicetak ke PDF
   const exportData = useMemo(() => {
-    // Jika pilihannya "Bulanan", cukup gunakan seluruh transaksi di bulan tersebut
-    if (exportPeriod === "monthly") {
-      return transactions;
-    }
-    
-    // Jika "Rentang Tanggal", filter transaksi berdasarkan tanggal awal dan akhir
+    if (exportPeriod === "monthly") return transactions;
     return transactions.filter(t => {
-      // Mengubah string tanggal (YYYY-MM-DD) menjadi angka agar mudah dibandingkan
       const txDate = new Date(t.date).getTime();
       const start = new Date(exportStartDate).getTime();
       const end = new Date(exportEndDate).getTime();
-      
       return txDate >= start && txDate <= end;
     });
   }, [transactions, exportPeriod, exportStartDate, exportEndDate]);
 
-  // Hitung ulang ringkasan (Pemasukan/Pengeluaran) khusus untuk data yang difilter ini
   const exportSummary = useMemo(() => {
     let income = 0;
     let expense = 0;
-    
     exportData.forEach(t => {
       if (t.type === "income") income += t.amount;
       else expense += t.amount;
     });
-    
-    return {
-      income,
-      expense,
-      balance: income - expense
-    };
+    return { income, expense, balance: income - expense };
   }, [exportData]);
+
+  const getPageTitle = () => {
+    if (page === "profile") return words.profile;
+    const navItem = NAV.find((n) => n.id === page);
+    return navItem ? words[navItem.labelKey as keyof typeof words] : "";
+  };
 
   return (
     <div className={`app-layout ${theme === "dark" ? "ios-dark" : "ios-light"}`}>
-      {/* Sidebar Desktop */}
-      <aside className="sidebar iOs-sidebar">
+      
+      {/* ── CSS SAKTI: PENGATURAN RESPONSIVE DESKTOP & MOBILE ── */}
+      {/* ── CSS SAKTI: PENGATURAN RESPONSIVE DESKTOP & MOBILE ── */}
+      <style dangerouslySetInnerHTML={{__html: `
+        /* PENGATURAN DEFAULT: MOBILE (Layar Kecil) */
+        .smart-header {
+          position: fixed;
+          top: 0; left: 0; right: 0;
+          z-index: 900;
+          padding: 16px 20px;
+          border-bottom: 1px solid var(--ios-border-light);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          background: ${theme === "dark" ? "rgba(28, 28, 30, 0.82)" : "rgba(242, 242, 247, 0.82)"};
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          height: 64px;
+          box-sizing: border-box;
+        }
+        .smart-main {
+          padding-top: 64px;
+          padding-bottom: 110px;
+        }
+        .mobile-only-logo {
+          display: flex;
+        }
+        .smart-bottom-nav {
+          display: flex;
+        }
+
+        /* PENGATURAN DESKTOP & TABLET (Layar Lebar > 768px) */
+        @media (min-width: 768px) {
+          .smart-header {
+            position: sticky;
+            top: 0;
+            left: auto; right: auto;
+            padding: 16px 0;
+            margin-bottom: 24px;
+          }
+          .smart-main {
+            padding-top: 0;
+            padding-bottom: 40px;
+            /* 👇 INI KUNCI UNTUK MELEBARKAN KONTEN KE KANAN 👇 */
+            max-width: 1200px !important; /* Batas wajar di desktop agar rapi */
+            width: 100% !important;
+            padding-right: 32px !important; /* Memberi ruang napas di kanan */
+          }
+          .mobile-only-logo {
+            display: none !important;
+          }
+          .smart-bottom-nav {
+            display: none !important;
+          }
+        }
+      `}} />
+
+      {/* ── SIDEBAR DESKTOP ── */}
+      <aside className="sidebar iOs-sidebar non-printable">
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">
-            <SavingsRoundedIcon style={{ fontSize: 24, color: "#007AFF" }} />
+            <SavingsRoundedIcon fontSize="large" style={{ color: "#007AFF" }} />
           </div>
           <div>
             <div className="sidebar-logo-text">MoFlow</div>
@@ -429,35 +430,72 @@ export default function Dashboard() {
         </button>
       </aside>
 
-      {/* Konten Utama */}
-      <main className="main-content printable-area">
-        {/* Header Konten */}
-        <div className="page-header non-printable">
-          <h1 className="page-title">{words[NAV.find((n) => n.id === page)?.labelKey as keyof typeof words]}</h1>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <div className="month-nav ios-month-nav">
-              <button 
-                className="month-nav-btn" 
-                onClick={() => setCurrentMonth(format(subMonths(new Date(`${currentMonth}-01`), 1), "yyyy-MM"))}
-              >
-                <ChevronLeftIcon />
-              </button>
-              
-              <span className="month-label">{monthLabel}</span>
-              
-              <button 
-                className="month-nav-btn" 
-                onClick={() => setCurrentMonth(format(addMonths(new Date(`${currentMonth}-01`), 1), "yyyy-MM"))}
-              >
-                <ChevronRightIcon />
-              </button>
+      {/* ── KONTEN UTAMA ── */}
+      {/* Menggunakan class "smart-main" yang diatur secara responsif di atas */}
+      <main className="main-content smart-main printable-area">
+        
+        {/* ── HEADER MOBILE/DESKTOP ── */}
+        {/* Menggunakan class "smart-header" yang diatur secara responsif di atas */}
+        <header className="app-header smart-header non-printable">
+          {/* Logo & Judul Halaman */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="mobile-only-logo" style={{ color: "var(--ios-primary)" }}>
+               <SavingsRoundedIcon fontSize="small" />
             </div>
-            {/* <button className="btn btn-ghost add-btn-desktop ios-btn-secondary" onClick={() => setShowAdd(true)}>
-              + Add
-            </button> */}
+            <h1 className="page-title" style={{ margin: 0, fontSize: "20px", fontWeight: 700, whiteSpace: "nowrap" }}>
+              {getPageTitle()}
+            </h1>
           </div>
-        </div>
+          
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            {/* Navigasi Bulan */}
+            {page !== "profile" && (
+              <div 
+                className="month-nav ios-month-nav" 
+                style={{ 
+                  margin: 0, height: 34, padding: "0 4px", borderRadius: 17, 
+                  display: "flex", alignItems: "center", backgroundColor: "var(--ios-input)"
+                }}
+              >
+                <button 
+                  className="month-nav-btn" 
+                  style={{ padding: "4px", display: "flex", alignItems: "center", color: "var(--ios-primary)" }}
+                  onClick={() => setCurrentMonth(format(subMonths(new Date(`${currentMonth}-01`), 1), "yyyy-MM"))}
+                >
+                  <ChevronLeftIcon fontSize="small" />
+                </button>
+                <span 
+                  className="month-label" 
+                  style={{ fontSize: 13, fontWeight: 600, margin: "0 4px", minWidth: 70, textAlign: "center" }}
+                >
+                  {monthLabel}
+                </span>
+                <button 
+                  className="month-nav-btn" 
+                  style={{ padding: "4px", display: "flex", alignItems: "center", color: "var(--ios-primary)" }}
+                  onClick={() => setCurrentMonth(format(addMonths(new Date(`${currentMonth}-01`), 1), "yyyy-MM"))}
+                >
+                  <ChevronRightIcon fontSize="small" />
+                </button>
+              </div>
+            )}
 
+            {/* Tombol Profil Bulat */}
+            <button 
+              onClick={() => setPage("profile")}
+              style={{
+                width: 34, height: 34, borderRadius: "50%", 
+                backgroundColor: "var(--ios-primary, #007AFF)", color: "#fff",
+                border: "none", display: "flex", alignItems: "center", justifyContent: "center",
+                fontWeight: 600, fontSize: 13, cursor: "pointer", boxShadow: "0 2px 6px rgba(0,0,0,0.15)", flexShrink: 0
+              }}
+            >
+              {userName ? userName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() : "U"}
+            </button>
+          </div>
+        </header>
+
+        {/* ── ISI HALAMAN (DASHBOARD, TRANSACTIONS, ETC) ── */}
         {loading ? (
           <div className="loader-container">
             <div className="ios-spinner"></div>
@@ -488,14 +526,14 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="grid-sidebar">
-                  <div>
+                <div className="grid-sidebar" style={{ gap: 16 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                     <div className="card ios-card section">
                       <div className="section-header">
                         <span className="section-title">{words.dailyActivity}</span>
                       </div>
                       {dailyData.length > 0 ? (
-                        <div className="chart-container">
+                        <div className="chart-container" style={{ minHeight: 220 }}>
                           <ResponsiveContainer width="100%" height={220}>
                             <AreaChart data={dailyData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                               <defs>
@@ -509,7 +547,6 @@ export default function Dashboard() {
                                 </linearGradient>
                               </defs>
                               
-                              {/* Garis bantu horizontal yang tipis */}
                               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--ios-border-light)" />
                               
                               <XAxis 
@@ -526,7 +563,6 @@ export default function Dashboard() {
                                 labelFormatter={(label) => `${words.date || 'Tanggal'} ${label}`}
                               />
                               
-                              {/* Area Pemasukan (Hijau) */}
                               <Area 
                                 type="monotone" 
                                 dataKey="income" 
@@ -535,7 +571,6 @@ export default function Dashboard() {
                                 fillOpacity={1} 
                                 fill="url(#colorIncome)" 
                               />
-                              {/* Area Pengeluaran (Merah) */}
                               <Area 
                                 type="monotone" 
                                 dataKey="expense" 
@@ -581,7 +616,7 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                     <div className="card ios-card section">
                       <div className="section-header">
                         <span className="section-title">{words.budgets}</span>
@@ -607,7 +642,7 @@ export default function Dashboard() {
                       })}
                     </div>
 
-                    <div className="card ios-card">
+                    <div className="card ios-card Section">
                       <div className="section-header"><span className="section-title">{words.topSpend}</span></div>
                       {categoryData.slice(0, 4).map((c, i) => (
                         <div key={c.category} className="ios-category-row">
@@ -625,12 +660,11 @@ export default function Dashboard() {
             {/* ── 2. TRANSACTIONS VIEW ── */}
             {page === "transactions" && (
               <div className="transactions-page">
-                
                 {/* Filter & Sort Controls (Tampilan iOS Native) */}
-                <div className="ios-filter-bar">
+                <div className="ios-filter-bar" style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
                   
                   {/* Segmented Control untuk Filter */}
-                  <div className="ios-segment-container">
+                  <div className="ios-segment-container" style={{ flex: "1 1 240px", margin: 0 }}>
                     <button className={`ios-segment-btn ${txFilter === "all" ? "active" : ""}`} onClick={() => setTxFilter("all")}>
                       Semua
                     </button>
@@ -642,27 +676,54 @@ export default function Dashboard() {
                     </button>
                   </div>
 
-                  {/* Dropdown untuk Sort */}
-                  <div style={{ flex: "1 1 120px" }}>
+                  {/* Dropdown Sort ala Tombol iOS */}
+                  <div style={{ position: "relative", flex: "1 1 120px" }}>
                     <select
                       className="ios-sort-select"
                       value={txSort}
                       onChange={(e) => setTxSort(e.target.value as any)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 16px 10px 16px",
+                        borderRadius: "10px",
+                        border: "none",
+                        backgroundColor: "var(--ios-card-bg)",
+                        color: "var(--ios-text-main)",
+                        fontSize: "14px",
+                        fontWeight: 600,
+                        // Menghapus panah bawaan browser dengan cara yang lebih agresif
+                        appearance: "none", 
+                        WebkitAppearance: "none",
+                        MozAppearance: "none",
+                        backgroundImage: "none", /* KUNCI: Menghilangkan icon panah bawaan */
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                        cursor: "pointer"
+                      }}
                     >
-                      <option value="newest">Terbaru</option>
-                      <option value="highest">Tertinggi</option>
-                      <option value="lowest">Terendah</option>
+                      <option value="newest">Urutkan: Terbaru</option>
+                      <option value="highest">Urutkan: Tertinggi</option>
+                      <option value="lowest">Urutkan: Terendah</option>
                     </select>
+                    
+                    {/* Ikon Panah (Chevron) Custom */}
+                    <div style={{ 
+                      position: "absolute", 
+                      right: 14, 
+                      top: "50%", 
+                      transform: "translateY(-50%)", 
+                      pointerEvents: "none", 
+                      color: "var(--ios-text-muted)",
+                      display: "flex",
+                      alignItems: "center"
+                    }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
                   </div>
-
                 </div>
 
-                {/* Grouped List */}
                 {processedTransactions.length > 0 ? (
                   processedTransactions.map((group) => (
                     <div key={group.date} className="card ios-card" style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
-                      
-                      {/* Group Header (Summary Harian) */}
                       <div style={{ background: "var(--ios-input)", padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ios-text-muted)" }}>
                           {format(parseISO(group.date), "dd MMMM yyyy", { locale: language === "id" ? localeID : localeEN })}
@@ -673,7 +734,6 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      {/* Transaction Items */}
                       <div className="tx-list" style={{ padding: "0 16px" }}>
                         {group.items.map((t) => {
                           const meta = getCategoryMeta(t.category);
@@ -691,7 +751,6 @@ export default function Dashboard() {
                           );
                         })}
                       </div>
-                      
                     </div>
                   ))
                 ) : (
@@ -705,8 +764,6 @@ export default function Dashboard() {
             {/* ── 3. ANALYTICS VIEW ── */}
             {page === "analytics" && (
               <div className="analytics-page">
-                
-                {/* 1. KARTU RINGKASAN JAJAR SAMPING + INDIKATOR PERBANDINGAN */}
                 <div className="analytics-summary-grid">
                   <div className="summary-card ios-card income">
                     <div className="summary-label">{words.income}</div>
@@ -724,11 +781,8 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* 2. BARIS GRAFIK BREAKDOWN (DONAT + LEGENDA PERSENTASE) & PENGELUARAN TERBESAR */}
                 <div className="analytics-main-grid">
-                  
-                  {/* Grafik Donat + Legenda */}
-                  <div className="card ios-card">
+                  <div className="card ios-card section">
                     <div className="section-header">
                       <span className="section-title">Breakdown Kategori</span>
                     </div>
@@ -756,7 +810,6 @@ export default function Dashboard() {
                           </ResponsiveContainer>
                         </div>
                         
-                        {/* Keterangan Kategori + Persentase Dinamis */}
                         <div className="pie-legend-wrapper">
                           {categoryData.map((c, i) => {
                             const pct = summary.totalExpense > 0 ? ((c.value / summary.totalExpense) * 100).toFixed(1) : 0;
@@ -778,12 +831,11 @@ export default function Dashboard() {
                     )}
                   </div>
 
-                  {/* Pengeluaran Terbesar Progresif */}
-                  <div className="card ios-card">
-                    <div className="section-header">
+                  <div className="card ios-card section">
+                    <div className="section-header" style={{ marginBottom: 16 }}>
                       <span className="section-title">{words.topSpend}</span>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                       {categoryData.slice(0, 4).map((c, i) => (
                         <div key={c.category}>
                           <div style={{ display: "flex", justifyContent: "space-between", width: "100%", fontSize: 13, marginBottom: 5 }}>
@@ -803,11 +855,9 @@ export default function Dashboard() {
                       ))}
                     </div>
                   </div>
-
                 </div>
 
-                {/* 3. GRAFIK TREN SALDO KORIDOR PENUH (CASHFLOW TREN) */}
-                <div className="card ios-card" style={{ marginTop: 16 }}>
+                <div className="card ios-card section" style={{ marginTop: 16 }}>
                   <div className="section-header">
                     <div>
                       <span className="section-title">Tren Arus Kas Bulanan</span>
@@ -822,8 +872,6 @@ export default function Dashboard() {
                         <LineChart data={cashflowData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--ios-border-light)" />
                           <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#8E8E93" }} axisLine={false} tickLine={false} />
-                          
-                          {/* Y-Axis diperbaiki di sini */}
                           <YAxis 
                             tickFormatter={formatCompact} 
                             tick={{ fontSize: 11, fill: "#8E8E93" }} 
@@ -831,7 +879,6 @@ export default function Dashboard() {
                             tickLine={false} 
                             width={45} 
                           />
-                          
                           <Tooltip
                             contentStyle={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", border: "none", borderRadius: 12, fontSize: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
                             formatter={(value: any) => formatCurrency(value)}
@@ -853,31 +900,46 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
-
               </div>
             )}
 
             {/* ── 4. BUDGETS VIEW ── */}
             {page === "budgets" && (
               <div className="budgets-page">
-                
-                {/* Bagian Atas: Tombol Tambah & Ringkasan Total */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
-                  <button className="btn btn-primary ios-btn-primary" style={{ maxWidth: 180 }} onClick={() => setShowBudget(true)}>
-                    + {words.setBudget}
-                  </button>
-
+                {/* Bagian Atas: Ringkasan Total & Tombol Tambah (Disusun Vertikal untuk Mobile) */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
+                  
+                  {/* Kartu Ringkasan Anggaran (Hanya muncul jika ada anggaran) */}
                   {budgets.length > 0 && (
-                    <div style={{ textAlign: "right", color: "var(--ios-text-muted)", fontSize: 14 }}>
-                      <div>Total Anggaran: <span style={{ color: "var(--ios-text-main)", fontWeight: 600 }}>{formatCurrency(totalBudgetSummary.totalLimit)}</span></div>
-                      <div>Total Terpakai: <span style={{ color: "var(--ios-danger)", fontWeight: 600 }}>{formatCurrency(totalBudgetSummary.totalSpent)}</span></div>
+                    <div className="card ios-card" style={{ padding: "16px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", width: "100%", textAlign: "center" }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginBottom: 4 }}>Total Anggaran</div>
+                          <div style={{ fontSize: 18, color: "var(--ios-text-main)", fontWeight: 700 }}>{formatCurrency(totalBudgetSummary.totalLimit)}</div>
+                        </div>
+                        <div style={{ width: 1, backgroundColor: "var(--ios-border-light)", margin: "0 16px" }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginBottom: 4 }}>Total Terpakai</div>
+                          <div style={{ fontSize: 18, color: "var(--ios-danger)", fontWeight: 700 }}>{formatCurrency(totalBudgetSummary.totalSpent)}</div>
+                        </div>
+                      </div>
+                      
                       {daysRemaining !== null && (
-                        <div style={{ marginTop: 4, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
+                        <div style={{ marginTop: 4, fontSize: 12, color: "var(--ios-text-muted)", backgroundColor: "var(--ios-bg)", padding: "4px 12px", borderRadius: 12, display: "inline-flex", alignItems: "center", gap: 6 }}>
                           ⏱ <span style={{ fontWeight: 500 }}>{words.remaining} {daysRemaining} hari</span>
                         </div>
                       )}
                     </div>
                   )}
+
+                  {/* Tombol Tambah Anggaran (Full Width) */}
+                  <button 
+                    className="btn btn-primary ios-btn-primary" 
+                    style={{ width: "100%", padding: "14px", justifyContent: "center", fontSize: 16 }} 
+                    onClick={() => setShowBudget(true)}
+                  >
+                    + {words.setBudget}
+                  </button>
                 </div>
 
                 {budgets.length > 0 ? (
@@ -888,14 +950,12 @@ export default function Dashboard() {
                       const pct = Math.min((spent / b.limit) * 100, 100);
                       const remaining = b.limit - spent;
                       
-                      // Logika warna progress bar
-                      let barColor = "#34C759"; // Hijau aman
-                      if (pct >= 90) barColor = "#FF3B30"; // Merah bahaya
-                      else if (pct >= 75) barColor = "#FF9500"; // Oranye peringatan
+                      let barColor = "#34C759";
+                      if (pct >= 90) barColor = "#FF3B30";
+                      else if (pct >= 75) barColor = "#FF9500";
 
                       return (
-                        <div key={b.id} className="card ios-card budget-card-compact" onClick={() => setShowBudget(true)} style={{ cursor: "pointer" }}>
-                          
+                        <div key={b.id} className="card ios-card budget-card-compact section" onClick={() => setShowBudget(true)} style={{ cursor: "pointer" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                               <div className={`tx-icon circle-icon expense`} style={{ width: 40, height: 40, fontSize: 18 }}>
@@ -929,7 +989,6 @@ export default function Dashboard() {
                               </span>
                             </div>
                           </div>
-
                         </div>
                       );
                     })}
@@ -946,13 +1005,10 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* ── 5. USER PROFILE & PREFERENCES VIEW (NEW) ── */}
+            {/* ── 5. USER PROFILE & PREFERENCES VIEW ── */}
             {page === "profile" && (
               <div className="ios-profile-container">
-
-                {/* User Info Header Card */}
-                <div className="card ios-card user-hero" style={{ position: "relative" }}>
-                  {/* Tombol Edit */}
+                <div className="card ios-card user-hero section" style={{ position: "relative" }}>
                   <button 
                     onClick={() => { 
                       setTempName(userName); 
@@ -973,12 +1029,9 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Settings System Grouped List */}
                 <div className="ios-settings-group">
                   <div className="group-title">{words.preferences}</div>
-                  <div className="card ios-card grouped-list-card">
-                    
-                    {/* Tampilan Kontrol */}
+                  <div className="card ios-card grouped-list-card section">
                     <div className="setting-row">
                       <div className="row-left">✨ {words.theme}</div>
                       <div className="row-right">
@@ -987,7 +1040,6 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    {/* Bahasa Kontrol */}
                     <div className="setting-row">
                       <div className="row-left">🌐 {words.language}</div>
                       <div className="row-right">
@@ -996,7 +1048,6 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    {/* Mata Uang Kontrol */}
                     <div className="setting-row">
                       <div className="row-left">💵 {words.currency}</div>
                       <div className="row-right">
@@ -1004,13 +1055,11 @@ export default function Dashboard() {
                         <button className={`toggle-segment ${currency === "IDR" ? "active" : ""}`} onClick={() => setCurrency("IDR")}>IDR (Rp)</button>
                       </div>
                     </div>
-
                   </div>
                 </div>
 
-                {/* Action Controls Card */}
                 <div className="ios-settings-group">
-                  <div className="card ios-card grouped-list-card action-card">
+                  <div className="card ios-card grouped-list-card action-card section">
                     <button className="ios-list-action-btn" onClick={() => setShowExportModal(true)}>
                       <span className="action-icon"><FileDownloadIcon /></span>
                       {words.exportReport}
@@ -1019,7 +1068,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="ios-settings-group" style={{ marginTop: '10px' }}>
-                  <div className="card ios-card grouped-list-card action-card">
+                  <div className="card ios-card grouped-list-card action-card section">
                     <button 
                       className="ios-list-action-btn" 
                       onClick={() => setShowPasswordModal(true)} 
@@ -1031,7 +1080,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="ios-settings-group" style={{ marginTop: '20px' }}>
-                  <div className="card ios-card grouped-list-card action-card">
+                  <div className="card ios-card grouped-list-card action-card section">
                     <button 
                       className="ios-list-action-btn" 
                       onClick={() => logOut()} 
@@ -1047,36 +1096,69 @@ export default function Dashboard() {
         )}
       </main>
 
-      {/* Bottom Nav Mobile */}
-      <nav className="bottom-nav ios-bottom-nav non-printable">
-        {NAV.map((item) => (
-          <button
-            key={item.id}
-            className={`bottom-nav-item ${page === item.id ? "active" : ""}`}
-            onClick={() => setPage(item.id)}
-          >
-            <span className="bottom-nav-item-icon">{item.icon}</span>
-            <span className="bottom-nav-item-label">{words[item.labelKey as keyof typeof words]}</span>
-          </button>
-        ))}
+      {/* ── BOTTOM NAV MOBILE (Diatur via class CSS .smart-bottom-nav agar hilang di Desktop) ── */}
+      <nav 
+        className="bottom-nav ios-bottom-nav smart-bottom-nav non-printable" 
+        style={{ 
+          position: "fixed",
+          bottom: 0, left: 0, right: 0,
+          justifyContent: "space-between", 
+          padding: "0 10px", 
+          alignItems: "center",
+          backgroundColor: theme === "dark" ? "#1C1C1E" : "#FFFFFF", 
+          backdropFilter: "none", WebkitBackdropFilter: "none", 
+          borderTop: "1px solid var(--ios-border-light)",
+          zIndex: 1000
+        }}
+      >
+        <div style={{ display: "flex", flex: 1, justifyContent: "space-around" }}>
+          {NAV.slice(0, 2).map((item) => (
+            <button
+              key={item.id}
+              className={`bottom-nav-item ${page === item.id ? "active" : ""}`}
+              onClick={() => setPage(item.id)}
+            >
+              <span className="bottom-nav-item-icon">{item.icon}</span>
+              <span className="bottom-nav-item-label">{words[item.labelKey as keyof typeof words]}</span>
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 70 }}>
+          {!showAdd && !editTx && !showBudget && (
+            <button 
+              className="fab ios-fab non-printable" 
+              onClick={() => setShowAdd(true)}
+              style={{
+                position: "absolute", top: -18, left: "50%", transform: "translateX(-50%)",
+                width: 56, height: 56, boxShadow: "0 6px 16px rgba(0, 122, 255, 0.3)", zIndex: 1001,
+                border: `4px solid ${theme === "dark" ? "#1C1C1E" : "#FFFFFF"}`, 
+                backgroundColor: "var(--ios-primary, #007AFF)", color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%"
+              }}
+            >
+              <AddIcon fontSize="large" />
+            </button>
+          )}
+        </div>
+
+        <div style={{ display: "flex", flex: 1, justifyContent: "space-around" }}>
+          {NAV.slice(2, 4).map((item) => (
+            <button
+              key={item.id}
+              className={`bottom-nav-item ${page === item.id ? "active" : ""}`}
+              onClick={() => setPage(item.id)}
+            >
+              <span className="bottom-nav-item-icon">{item.icon}</span>
+              <span className="bottom-nav-item-label">{words[item.labelKey as keyof typeof words]}</span>
+            </button>
+          ))}
+        </div>
       </nav>
 
-      {/* FAB Mobile Button */}
-      {!showAdd && !editTx && !showBudget && (
-        <button 
-          className={`fab ios-fab non-printable ${isVisible ? "" : "hide"}`} 
-          onClick={() => setShowAdd(true)}>
-          <AddIcon />
-        </button>
-      )}
-
-      {/* Modals Core Controls - Tambahkan prop currentLang={language} */}
+      {/* Modals Core Controls */}
       {showAdd && (
-        <TransactionModal 
-          onClose={() => setShowAdd(false)} 
-          onSave={addTransaction} 
-          currentLang={language} 
-        />
+        <TransactionModal onClose={() => setShowAdd(false)} onSave={addTransaction} currentLang={language} />
       )}
 
       {editTx && (
@@ -1100,7 +1182,7 @@ export default function Dashboard() {
         />
       )}
 
-      {/* ── Modal Pengaturan Cetak PDF ── */}
+      {/* Modal Pengaturan Cetak PDF */}
       {showExportModal && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowExportModal(false)}>
           <div className="modal">
@@ -1109,7 +1191,6 @@ export default function Dashboard() {
               <button className="modal-close" onClick={() => setShowExportModal(false)}>✕</button>
             </div>
 
-            {/* Pilihan Periode */}
             <div className="form-group" style={{ marginBottom: 20 }}>
               <label className="form-label">Periode Laporan</label>
               <div className="ios-segment-container" style={{ width: "100%", margin: 0 }}>
@@ -1128,7 +1209,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Pilihan Waktu (Dinamis: Bulanan / Rentang Tanggal) */}
             <div className="form-group" style={{ marginBottom: 24, padding: "16px", background: "var(--ios-card-bg)", borderRadius: 12, border: "1px solid var(--ios-border-light)" }}>
               <label className="form-label" style={{ marginBottom: 12 }}>
                 {exportPeriod === "monthly" ? "Pilih Bulan Laporan" : "Pilih Tanggal Awal & Akhir"}
@@ -1169,11 +1249,9 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Pilihan Konten Laporan */}
             <div className="form-group" style={{ marginBottom: 32 }}>
               <label className="form-label" style={{ marginBottom: 12 }}>Konten Laporan</label>
               <div style={{ background: "var(--ios-card-bg)", borderRadius: 12, border: "1px solid var(--ios-border-light)", overflow: "hidden" }}>
-                
                 <label className="setting-row" style={{ cursor: "pointer", borderBottom: "1px solid var(--ios-border-light)", padding: "16px" }}>
                   <div className="row-left" style={{ fontSize: 14 }}>📊 Analisis & Ringkasan</div>
                   <div className="row-right">
@@ -1185,7 +1263,6 @@ export default function Dashboard() {
                     />
                   </div>
                 </label>
-
                 <label className="setting-row" style={{ cursor: "pointer", padding: "16px" }}>
                   <div className="row-left" style={{ fontSize: 14 }}>🧾 Daftar Transaksi Rinci</div>
                   <div className="row-right">
@@ -1197,7 +1274,6 @@ export default function Dashboard() {
                     />
                   </div>
                 </label>
-
               </div>
             </div>
 
@@ -1205,7 +1281,6 @@ export default function Dashboard() {
               className="btn btn-primary ios-btn-primary" 
               onClick={() => {
                 setShowExportModal(false);
-                // Nanti kita akan buat logika print khusus di sini
                 setTimeout(() => window.print(), 300);
               }}
               disabled={!exportIncludeAnalytics && !exportIncludeTx}
@@ -1216,7 +1291,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── Modal Edit Profil ── */}
+      {/* Modal Edit Profil */}
       {showProfileModal && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowProfileModal(false)}>
           <div className="modal">
@@ -1224,34 +1299,17 @@ export default function Dashboard() {
               <h2 className="modal-title">Edit Profil</h2>
               <button className="modal-close" onClick={() => setShowProfileModal(false)}>✕</button>
             </div>
-
             <div className="form-group">
               <label className="form-label">Nama Lengkap</label>
-              <input 
-                className="form-input" 
-                type="text" 
-                value={tempName} 
-                onChange={(e) => setTempName(e.target.value)} 
-              />
+              <input className="form-input" type="text" value={tempName} onChange={(e) => setTempName(e.target.value)} />
             </div>
-
             <div className="form-group" style={{ marginBottom: 24 }}>
               <label className="form-label">Bio / Pekerjaan</label>
-              <input 
-                className="form-input" 
-                type="text" 
-                value={tempBio} 
-                onChange={(e) => setTempBio(e.target.value)} 
-              />
+              <input className="form-input" type="text" value={tempBio} onChange={(e) => setTempBio(e.target.value)} />
             </div>
-
             <button 
               className="btn btn-primary ios-btn-primary" 
-              onClick={() => {
-                setUserName(tempName);
-                setUserBio(tempBio);
-                setShowProfileModal(false);
-              }}
+              onClick={() => { setUserName(tempName); setUserBio(tempBio); setShowProfileModal(false); }}
             >
               Simpan Profil
             </button>
@@ -1259,6 +1317,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Modal Password */}
       {showPasswordModal && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowPasswordModal(false)}>
           <div className="modal">
@@ -1269,11 +1328,8 @@ export default function Dashboard() {
             <div className="form-group" style={{ marginBottom: 20 }}>
               <label className="form-label">Password Baru</label>
               <input 
-                className="form-input" 
-                type="password" 
-                placeholder="Masukkan password baru"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                className="form-input" type="password" placeholder="Masukkan password baru"
+                value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
               />
             </div>
             <button className="btn btn-primary ios-btn-primary" onClick={handleChangePassword}>
@@ -1283,7 +1339,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── KANVAS RAHASIA UNTUK CETAK PDF (Hanya Muncul Saat Print) ── */}
+      {/* KANVAS RAHASIA UNTUK CETAK PDF */}
       <div className="print-only-canvas">
         <div style={{ textAlign: "center", marginBottom: 30, borderBottom: "2px solid #000", paddingBottom: 16 }}>
           <h1 style={{ margin: 0, fontSize: 24 }}>Laporan Keuangan MoFlow</h1>
@@ -1294,7 +1350,6 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Bagian Analisis Print */}
         {exportIncludeAnalytics && (
           <div style={{ marginBottom: 32 }}>
             <h2 style={{ fontSize: 18, marginBottom: 12 }}>Ringkasan Arus Kas</h2>
@@ -1317,7 +1372,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Bagian Transaksi Print */}
         {exportIncludeTx && (
           <div>
             <h2 style={{ fontSize: 18, marginBottom: 12 }}>Daftar Transaksi Rinci</h2>
@@ -1332,7 +1386,7 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {exportData
-                  .sort((a, b) => b.date.localeCompare(a.date)) // Urutkan dari terbaru
+                  .sort((a, b) => b.date.localeCompare(a.date))
                   .map(t => {
                     const meta = getCategoryMeta(t.category);
                     return (

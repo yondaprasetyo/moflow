@@ -152,6 +152,9 @@ html, body {
   min-height: 100vh;
   padding: 40px;
   max-width: calc(100vw - var(--sidebar-width));
+  max-width: 800px; 
+  margin-right: auto;
+  margin-left: auto;
 }
 
 /* Bottom Nav Mobile */
@@ -1152,5 +1155,29 @@ html, body {
 
   @page {
     margin: 1.5cm; /* Margin kertas A4 */
+  }
+}
+
+/* Override untuk sidebar agar tetap di kiri meski konten di tengah */
+@media (min-width: 769px) {
+  .main-content {
+    margin-left: var(--sidebar-width); /* Mengembalikan margin kiri */
+    margin-right: auto; /* Membatasi agar tidak melebar ke kanan */
+    max-width: 800px; /* Batasi lebar maksimal konten */
+  }
+}
+
+/* Pastikan mobile tetap full */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 20px 20px 100px;
+    max-width: 100%; /* Full di HP */
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-only-logo {
+    display: none !important;
   }
 }

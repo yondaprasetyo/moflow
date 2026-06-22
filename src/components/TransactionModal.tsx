@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-// Perhatikan: getCategoryMeta sudah saya hapus dari import ini
 import { Transaction, TransactionType, Category, INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/types";
 import { format } from "date-fns";
 import CloseIcon from '@mui/icons-material/CloseRounded';
@@ -97,87 +96,119 @@ export default function TransactionModal({ onClose, onSave, onDelete, initial, c
   }
 
   return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal">
-        <div className="modal-header">
+    <div 
+      className="modal-overlay" 
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      style={{ zIndex: 2000 }} /* Memastikan overlay modal berada di atas dock (yang z-index nya 1000) */
+    >
+      <div 
+        className="modal"
+        style={{
+          maxHeight: "90vh",     
+          display: "flex",       
+          flexDirection: "column",
+          overflow: "hidden",    
+          borderRadius: "16px",
+          margin: "auto",
+          padding: 0             /* Kita hilangkan padding luar... */
+        }}
+      >
+        {/* ── 1. HEADER (FIXED DI ATAS) ── */}
+        <div 
+          className="modal-header" 
+          style={{ 
+            flexShrink: 0, 
+            padding: "24px 24px 16px 24px", /* ...lalu kita pindahkan padding-nya ke sini */
+            marginBottom: 0,
+            borderBottom: "1px solid var(--ios-border-light, #eaeaea)"
+          }}
+        >
           <h2 className="modal-title">{initial ? t.edit : t.add} {t.title}</h2>
           <button className="modal-close" onClick={onClose}>
             <CloseIcon fontSize="small" />
           </button>
         </div>
 
-        <div className="type-toggle">
-          <button className={`type-toggle-btn income ${type === "income" ? "active" : ""}`} onClick={() => setType("income")}>
-            <ArrowUpwardIcon fontSize="small" style={{ marginRight: 4 }} /> {t.income}
-          </button>
-          <button className={`type-toggle-btn expense ${type === "expense" ? "active" : ""}`} onClick={() => setType("expense")}>
-            <ArrowDownwardIcon fontSize="small" style={{ marginRight: 4 }} /> {t.expense}
-          </button>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">{t.amount}</label>
-          <input
-            type="text" // Gunakan text agar bisa diformat dengan titik
-            inputMode="numeric"
-            className="form-input amount-input"
-            placeholder="0"
-            value={amount}
-            onChange={handleAmountChange} // Gunakan handler baru
-          />
-        </div>
-        
-        <div className="form-group">
-          <label className="form-label">{t.category}</label>
-          <div className="category-grid">
-            {categories.map((cat) => {
-              // Terjemahkan label secara dinamis
-              const translatedLabel = CATEGORY_TRANSLATIONS[cat.value]?.[currentLang] || cat.label;
-              return (
-                <button
-                  key={cat.value}
-                  type="button" // Sangat penting agar tidak mensubmit form
-                  className={`category-btn ${category === cat.value ? "active" : ""}`}
-                  onClick={() => setCategory(cat.value)}
-                >
-                  {cat.icon}
-                  <span className="category-label">{translatedLabel}</span>
-                </button>
-              );
-            })}
+        {/* ── 2. AREA KONTEN FORM (BISA DI-SCROLL) ── */}
+        <div style={{ 
+          overflowY: "auto", 
+          flex: 1, 
+          padding: "16px 24px 24px 24px" /* ...dan ke sini agar kontennya tidak menabrak pinggir */
+        }}>
+          
+          <div className="type-toggle">
+            <button className={`type-toggle-btn income ${type === "income" ? "active" : ""}`} onClick={() => setType("income")}>
+              <ArrowUpwardIcon fontSize="small" style={{ marginRight: 4 }} /> {t.income}
+            </button>
+            <button className={`type-toggle-btn expense ${type === "expense" ? "active" : ""}`} onClick={() => setType("expense")}>
+              <ArrowDownwardIcon fontSize="small" style={{ marginRight: 4 }} /> {t.expense}
+            </button>
           </div>
-        </div>
 
-        <div className="form-group">
-          <label className="form-label">{t.note}</label>
-          <input
-            className="form-input"
-            type="text"
-            placeholder={t.notePlaceholder}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-        </div>
+          <div className="form-group">
+            <label className="form-label">{t.amount}</label>
+            <input
+              type="text" 
+              inputMode="numeric"
+              className="form-input amount-input"
+              placeholder="0"
+              value={amount}
+              onChange={handleAmountChange} 
+            />
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">{t.category}</label>
+            <div className="category-grid">
+              {categories.map((cat) => {
+                const translatedLabel = CATEGORY_TRANSLATIONS[cat.value]?.[currentLang] || cat.label;
+                return (
+                  <button
+                    key={cat.value}
+                    type="button" 
+                    className={`category-btn ${category === cat.value ? "active" : ""}`}
+                    onClick={() => setCategory(cat.value)}
+                  >
+                    {cat.icon}
+                    <span className="category-label">{translatedLabel}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-        <div className="form-group">
-          <label className="form-label">{t.date}</label>
-          <input
-            className="form-input"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </div>
+          <div className="form-group">
+            <label className="form-label">{t.note}</label>
+            <input
+              className="form-input"
+              type="text"
+              placeholder={t.notePlaceholder}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
 
-        <button className="btn-submit" onClick={handleSubmit} disabled={saving}>
-          {saving ? t.saving : initial ? t.saveChanges : type === "income" ? t.addIncome : t.addExpense}
-        </button>
+          <div className="form-group">
+            <label className="form-label">{t.date}</label>
+            <input
+              className="form-input"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
 
-        {initial && onDelete && (
-          <button className="btn-submit btn-danger" style={{ marginTop: 8 }} onClick={handleDelete}>
-            {t.delete}
+          <button className="btn-submit" onClick={handleSubmit} disabled={saving}>
+            {saving ? t.saving : initial ? t.saveChanges : type === "income" ? t.addIncome : t.addExpense}
           </button>
-        )}
+
+          {initial && onDelete && (
+            <button className="btn-submit btn-danger" style={{ marginTop: 8 }} onClick={handleDelete}>
+              {t.delete}
+            </button>
+          )}
+
+        </div>
       </div>
     </div>
   );

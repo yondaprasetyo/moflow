@@ -3,7 +3,7 @@ import "./global.css";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
-  title: "FlowTrack — Money Tracker",
+  title: "MoFlow — Money Tracker",
   description: "Personal finance tracker with Firebase",
   // Hapus baris viewport dari sini
 };

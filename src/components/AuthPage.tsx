@@ -38,10 +38,10 @@ export default function AuthPage() {
     <div className="auth-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', padding: '20px', background: 'var(--ios-bg)' }}>
       <div className="card ios-card" style={{ width: '100%', maxWidth: '400px', padding: '32px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '8px', color: 'var(--ios-text-main)' }}>
-          {isLogin ? "Masuk MoFlow" : "Daftar MoFlow"}
+          {isLogin ? "MoFlow" : "Daftar MoFlow"}
         </h1>
         <p style={{ textAlign: 'center', color: 'var(--ios-text-muted)', marginBottom: '32px' }}>
-          {isLogin ? "Selamat datang kembali!" : "Buat akun untuk mulai melacak keuanganmu."}
+          {isLogin ? "Track your money flow." : "Buat akun untuk mulai melacak keuanganmu."}
         </p>
 
         <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
