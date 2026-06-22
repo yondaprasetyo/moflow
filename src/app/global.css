@@ -1,0 +1,1156 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ─── 1. iOS Theme Tokens (Light & Dark) ─────────────────────────────────── */
+:root {
+  /* Light Mode (Default) */
+  --ios-bg: #F2F2F7;
+  --ios-card-bg: rgba(255, 255, 255, 0.75);
+  --ios-card-hover: rgba(255, 255, 255, 0.9);
+  --ios-input: rgba(0, 0, 0, 0.05);
+  --ios-border: rgba(0, 0, 0, 0.08);
+  --ios-border-light: rgba(0, 0, 0, 0.04);
+  
+  --ios-text-main: #000000;
+  --ios-text-muted: #8E8E93;
+  --ios-text-subtle: #C7C7CC;
+
+  --ios-primary: #007AFF;
+  --ios-primary-dim: rgba(0, 122, 255, 0.15);
+  --ios-success: #34C759;
+  --ios-success-dim: rgba(52, 199, 89, 0.15);
+  --ios-danger: #FF3B30;
+  --ios-danger-dim: rgba(255, 59, 48, 0.15);
+  --ios-warning: #FF9500;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px; /* Squircle feel */
+  --radius-xl: 24px;
+
+  --sidebar-width: 240px;
+}
+
+html.dark {
+  /* Dark Mode */
+  --ios-bg: #000000;
+  --ios-card-bg: rgba(28, 28, 30, 0.75);
+  --ios-card-hover: rgba(44, 44, 46, 0.9);
+  --ios-input: rgba(255, 255, 255, 0.1);
+  --ios-border: rgba(255, 255, 255, 0.15);
+  --ios-border-light: rgba(255, 255, 255, 0.08);
+
+  --ios-text-main: #FFFFFF;
+  --ios-text-muted: #AEAEB2;
+  --ios-text-subtle: #636366;
+
+  --ios-primary: #0A84FF;
+  --ios-success: #32D74B;
+  --ios-danger: #FF453A;
+  --ios-warning: #FF9F0A;
+}
+
+/* ─── 2. Base & Reset ────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  background: var(--ios-bg);
+  color: var(--ios-text-main);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ─── 3. Layout (iOS Style) ──────────────────────────────────────────────── */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar Desktop */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--ios-card-bg);
+  backdrop-filter: blur(20px) saturation(180%);
+  -webkit-backdrop-filter: blur(20px) saturation(180%);
+  border-right: 1px solid var(--ios-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  padding: 24px 16px;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 32px;
+}
+
+.sidebar-logo-icon {
+  font-size: 28px;
+}
+
+.sidebar-logo-text {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+}
+
+.sidebar-logo-sub {
+  font-size: 11px;
+  color: var(--ios-text-muted);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--ios-text-muted);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  background: var(--ios-card-hover);
+  color: var(--ios-text-main);
+}
+
+.nav-item.active {
+  background: var(--ios-primary-dim);
+  color: var(--ios-primary);
+  font-weight: 600;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  padding: 40px;
+  max-width: calc(100vw - var(--sidebar-width));
+}
+
+/* Bottom Nav Mobile */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--ios-card-bg);
+  backdrop-filter: blur(20px) saturation(180%);
+  -webkit-backdrop-filter: blur(20px) saturation(180%);
+  border-top: 1px solid var(--ios-border);
+  z-index: 100;
+  height: 80px; /* Lebih tinggi untuk area home indicator iOS */
+  padding-bottom: 20px;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  color: var(--ios-text-muted);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+
+.bottom-nav-item.active {
+  color: var(--ios-primary);
+}
+
+.bottom-nav-item-icon {
+  font-size: 22px;
+}
+
+/* ─── 4. iOS Cards & Containers ──────────────────────────────────────────── */
+.ios-card {
+  background: var(--ios-card-bg);
+  backdrop-filter: blur(25px) saturation(200%);
+  -webkit-backdrop-filter: blur(25px) saturation(200%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--ios-border);
+  padding: 20px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: var(--ios-text-muted);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.summary-amount {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+}
+
+/* ─── 5. Lists & Settings Rows (iOS Style) ───────────────────────────────── */
+.tx-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ios-tx-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ios-border-light);
+  cursor: pointer;
+}
+
+.ios-tx-item:last-child {
+  border-bottom: none;
+}
+
+.tx-icon {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.tx-icon.income { background: var(--ios-success-dim); }
+.tx-icon.expense { background: var(--ios-danger-dim); }
+
+.tx-details { flex: 1; }
+.tx-note { font-weight: 600; font-size: 15px; }
+.tx-meta { font-size: 13px; color: var(--ios-text-muted); margin-top: 2px; }
+
+.ios-amount {
+  font-size: 16px;
+  font-weight: 600;
+}
+.ios-amount.income { color: var(--ios-success); }
+
+/* iOS Preference Groups */
+.ios-settings-group { margin-bottom: 24px; }
+.group-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--ios-text-muted);
+  margin-bottom: 8px;
+  margin-left: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.grouped-list-card { padding: 0 16px; }
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ios-border-light);
+}
+.setting-row:last-child { border-bottom: none; }
+.row-left { font-weight: 500; font-size: 15px; }
+.row-right { display: flex; gap: 4px; background: var(--ios-input); padding: 4px; border-radius: 8px; }
+
+/* Segmented Control Switch */
+.toggle-segment {
+  background: transparent;
+  border: none;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  color: var(--ios-text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.toggle-segment.active {
+  background: var(--ios-card-bg);
+  color: var(--ios-text-main);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* User Profile Hero */
+.user-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px;
+  margin-bottom: 24px;
+}
+.avatar-circle {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--ios-primary), #5AC8FA);
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px var(--ios-primary-dim);
+}
+
+.action-card { padding: 0; }
+.ios-list-action-btn {
+  width: 100%;
+  padding: 16px;
+  background: transparent;
+  border: none;
+  color: var(--ios-primary);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer;
+}
+
+/* ─── 6. Headers, Buttons & Inputs ───────────────────────────────────────── */
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 32px;
+}
+.page-title {
+  font-size: 32px; font-weight: 700; letter-spacing: -1px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: transform 0.1s ease;
+}
+.ios-btn-primary { background: var(--ios-primary); color: white; width: 100%; }
+.ios-btn-primary:active { transform: scale(0.97); }
+.ios-btn-secondary { background: var(--ios-input); color: var(--ios-primary); }
+
+.ios-month-nav {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--ios-card-bg);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--ios-border);
+}
+.month-nav-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px; border: none;
+  background: transparent;
+  color: var(--ios-primary);
+  font-size: 20px; cursor: pointer;
+}
+.month-nav-btn:hover { background: var(--ios-input); }
+.month-label { font-weight: 600; min-width: 110px; text-align: center; }
+
+/* ─── 7. Modals & Forms ──────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 20px;
+}
+.modal {
+  background: var(--ios-bg);
+  border: 1px solid var(--ios-border);
+  border-radius: var(--radius-xl);
+  padding: 24px; width: 100%; max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+.form-input {
+  width: 100%;
+  background: var(--ios-card-bg);
+  border: 1px solid var(--ios-border);
+  border-radius: var(--radius-sm);
+  color: var(--ios-text-main);
+  padding: 14px; outline: none;
+  font-size: 16px;
+}
+.form-input:focus { border-color: var(--ios-primary); }
+
+/* ─── 8. Budgets & Trackers ──────────────────────────────────────────────── */
+.ios-track {
+  height: 8px;
+  background: var(--ios-input);
+  border-radius: 99px; overflow: hidden;
+}
+.budget-bar-fill {
+  height: 100%; border-radius: 99px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ios-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+}
+.ios-badge.success { background: var(--ios-success-dim); color: var(--ios-success); }
+.ios-badge.danger { background: var(--ios-danger-dim); color: var(--ios-danger); }
+
+/* ─── 9. Print Media for PDF Export ──────────────────────────────────────── */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .non-printable, .sidebar, .bottom-nav, .fab, .modal-overlay, .month-nav-btn, .ios-list-action-btn {
+    display: none !important;
+  }
+  .printable-area {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    max-width: none !important;
+  }
+  .ios-card {
+    border: 1px solid #E5E5EA !important;
+    background: #FFFFFF !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    backdrop-filter: none !important;
+  }
+  .summary-amount, .tx-note, .row-left {
+    color: #000000 !important;
+  }
+}
+
+/* ─── 10. Responsive Tweaks ──────────────────────────────────────────────── */
+.grid-sidebar {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .grid-sidebar { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; padding: 20px 20px 100px; max-width: 100%; }
+  .bottom-nav { display: flex; }
+  .page-title { font-size: 26px; }
+  .summary-grid { grid-template-columns: 1fr; }
+  
+  .fab {
+    position: fixed; bottom: 100px; right: 20px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--ios-primary);
+    color: white; border: none; font-size: 28px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px var(--ios-primary-dim);
+    z-index: 150;
+  }
+}
+
+/* ─── PERBAIKAN CHART CONTAINER (Untuk error di console) ─────────────────── */
+.chart-container {
+  width: 100%;
+  height: 250px;
+  min-height: 250px;
+  min-width: 0; /* Penting agar flex/grid tidak overflow */
+  margin-top: 16px;
+  position: relative;
+}
+
+/* ─── PERBAIKAN MODAL & PANEL TAMBAH TRANSAKSI ───────────────────────────── */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--ios-input);
+  color: var(--ios-text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.modal-close:hover {
+  background: var(--ios-border);
+}
+
+/* Toggle Pemasukan / Pengeluaran (Style iOS Segmented Control) */
+.type-toggle {
+  display: flex;
+  background: var(--ios-input);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.type-toggle-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ios-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.type-toggle-btn.income.active {
+  background: var(--ios-card-bg);
+  color: var(--ios-success);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.type-toggle-btn.expense.active {
+  background: var(--ios-card-bg);
+  color: var(--ios-danger);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Form Groups & Inputs */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ios-text-muted);
+  margin-bottom: 8px;
+}
+
+.amount-input {
+  font-size: 32px;
+  font-weight: 700;
+  padding: 16px;
+  text-align: center;
+  letter-spacing: -1px;
+}
+
+.form-select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
+/* ── Grid Kategori (iOS Style) ──────────────────────────── */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 16px 0 24px 0;
+}
+
+.category-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 4px;
+  border-radius: 16px; /* Lebih rounded khas iOS */
+  border: 1px solid var(--ios-border);
+  background: var(--ios-card-bg);
+  color: var(--ios-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-btn:hover {
+  border-color: var(--ios-primary);
+  background: var(--ios-input);
+}
+
+/* State Aktif - Menjadi menonjol */
+.category-btn.active {
+  border-color: var(--ios-primary);
+  background: var(--ios-primary);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 122, 255, 0.2);
+}
+
+.category-btn-icon {
+  font-size: 20px; /* Ikon lebih besar dan jelas */
+  transition: transform 0.3s;
+}
+
+.category-btn.active .category-btn-icon {
+  transform: scale(1.1);
+}
+
+/* Tombol Tambahan */
+.btn-danger {
+  background: var(--ios-danger-dim);
+  color: var(--ios-danger);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ios-text-muted);
+  border: 1px solid var(--ios-border);
+}
+
+.btn-ghost:hover {
+  background: var(--ios-input);
+  color: var(--ios-text-main);
+}
+
+/* ─── TOMBOL ACTION KECIL (Lihat Semua, Kelola) ──────────────────────────── */
+.btn-action-small {
+  background: var(--ios-primary-dim);
+  color: var(--ios-primary);
+  border: none;
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-action-small:hover {
+  background: var(--ios-primary);
+  color: white;
+}
+
+/* ─── PERCANTIK MODAL (Tambahan padding & shadow) ────────────────────────── */
+.modal {
+  background: var(--ios-card-bg);
+  backdrop-filter: blur(25px) saturation(200%);
+  -webkit-backdrop-filter: blur(25px) saturation(200%);
+  border: 1px solid var(--ios-border);
+  border-radius: var(--radius-xl);
+  padding: 28px 24px; 
+  width: 100%; 
+  max-width: 420px;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Memperbaiki input text agar lebih bersih di modal */
+.modal .form-input {
+  background: var(--ios-input);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  transition: border 0.2s;
+}
+
+.modal .form-input:focus {
+  border: 1px solid var(--ios-primary);
+  background: var(--ios-card-bg);
+}
+
+/* Tombol Submit di dalam Modal */
+.modal .btn-submit {
+  background: var(--ios-primary);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.modal .btn-submit:active { transform: scale(0.98); }
+
+.section-header {
+  display: flex;
+  justify-content: space-between; /* Mendorong teks ke kiri, tombol ke kanan */
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ios-text-primary);
+}
+
+.btn-action-small {
+  background: transparent;
+  color: var(--ios-primary);
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.btn-action-small:hover {
+  background: var(--ios-hover-bg); /* Tambahkan warna background tipis saat di-hover */
+}
+
+.ios-category-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 12px;
+}
+.row-name {
+  margin-left: 10px;
+  flex: 1; /* Ini kunci utama: mendorong row-value ke paling kanan */
+}
+.row-value {
+  font-weight: 600;
+}
+
+/* 1. Pengaturan FAB agar tetap rapi di Mobile */
+.ios-fab {
+  position: fixed;
+  bottom: 90px;  /* Jarak dari bawah */
+  right: 20px;  /* Jarak dari kanan */
+  z-index: 1000;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--ios-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+/* Sembunyikan FAB di layar Desktop (lebar 769px ke atas) */
+@media (min-width: 769px) {
+  .fab.ios-fab {
+    display: none !important;
+  }
+}
+
+.main-content {
+  padding-bottom: 80px; /* Tambahkan ruang ekstra agar konten tidak terpotong FAB */
+}
+
+.main-content {
+  /* Memberi ruang untuk Bottom Nav dan FAB */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 90px);
+}
+
+/* Sesuaikan dengan class ios-fab yang sudah ada */
+.ios-fab {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ios-fab.hide {
+  opacity: 0;
+  transform: translateY(100px); /* Geser ke bawah hingga hilang */
+  pointer-events: none; /* Tombol tidak bisa diklik saat tersembunyi */
+}
+
+/* Pastikan di desktop tetap tersembunyi */
+@media (min-width: 769px) {
+  .ios-fab {
+    display: none !important;
+  }
+}
+
+.category-btn {
+  display: flex;
+  flex-direction: column; /* Ikon di atas, teks di bawah */
+  align-items: center;
+  justify-content: center;
+  gap: 4px; /* Jarak antara ikon dan teks */
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e5ea;
+  background: white;
+  transition: all 0.2s;
+}
+
+.category-btn.active {
+  background-color: #007AFF; /* Sesuaikan dengan warna brand Anda */
+  color: white;
+}
+
+.category-btn svg {
+  font-size: 24px; /* Mengatur ukuran ikon agar konsisten */
+}
+
+/* ─── 11. Custom Loader ──────────────────────────────────────────────────── */
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  gap: 16px;
+  width: 100%;
+  min-height: 250px;
+}
+
+.ios-spinner {
+  width: 36px;
+  height: 36px;
+  /* Warna dasar cincin transparan/redup */
+  border: 4px solid var(--ios-primary-dim);
+  /* Warna cincin yang berputar */
+  border-top: 4px solid var(--ios-primary);
+  border-radius: 50%;
+  animation: spin 1s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+}
+
+.loader-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ios-text-muted);
+  letter-spacing: 0.3px;
+  /* Membuat teksnya bernapas (terang-redup) */
+  animation: pulse-text 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ─── 12. iOS Segmented Control & Select ─────────────────────────────────── */
+.ios-filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.ios-segment-container {
+  display: flex;
+  background-color: var(--ios-input);
+  padding: 4px;
+  border-radius: 12px;
+  flex: 2 1 240px;
+}
+
+.ios-segment-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--ios-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+}
+
+.ios-segment-btn:hover {
+  color: var(--ios-text-main);
+}
+
+/* Efek saat tombol aktif (Seperti tombol timbul) */
+.ios-segment-btn.active {
+  background-color: var(--ios-card-bg);
+  color: var(--ios-text-main);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+/* Beri aksen warna sedikit saat aktif agar lebih jelas */
+.ios-segment-btn.income.active { color: var(--ios-success); }
+.ios-segment-btn.expense.active { color: var(--ios-danger); }
+
+/* Custom iOS Select (Dropdown) */
+.ios-sort-select {
+  flex: 1 1 120px;
+  appearance: none;
+  background-color: var(--ios-input);
+  border: none;
+  padding: 8px 36px 8px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ios-text-main);
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  /* Panah bawah custom */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238E8E93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: background 0.2s;
+}
+
+.ios-sort-select:hover {
+  background-color: var(--ios-border);
+}
+.ios-sort-select:focus {
+  outline: 2px solid var(--ios-primary);
+  outline-offset: -2px;
+}
+
+/* ─── 13. Advanced Analytics Layout ──────────────────────────────────────── */
+.analytics-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.analytics-main-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+}
+
+/* Badge Komparasi Bulan (MoM Indicator) */
+.analytics-mom-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-top: 8px;
+  width: fit-content;
+}
+.analytics-mom-badge.up { background: var(--ios-success-dim); color: var(--ios-success); }
+.analytics-mom-badge.down { background: var(--ios-primary-dim); color: var(--ios-primary); } /* Biru untuk hemat pengeluaran */
+.mom-text { font-weight: 400; color: var(--ios-text-muted); font-size: 11px; }
+
+/* Wadah Penyelaras Donut Chart + Legend */
+.pie-analytics-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 200px;
+}
+
+.pie-chart-wrapper {
+  flex: 1;
+  height: 100%;
+}
+
+.pie-legend-wrapper {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.analytics-legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.legend-icon { margin-right: 6px; font-size: 14px; }
+.legend-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ios-text-main);
+}
+.legend-pct {
+  font-weight: 700;
+  color: var(--ios-text-muted);
+  margin-left: 8px;
+}
+
+/* Responsive Tweak untuk Tablet/HP */
+@media (max-width: 900px) {
+  .analytics-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .pie-analytics-container {
+    flex-direction: column;
+    height: auto;
+    padding-bottom: 16px;
+  }
+  .pie-chart-wrapper {
+    height: 160px;
+    width: 100%;
+  }
+  .pie-legend-wrapper {
+    width: 100%;
+    max-height: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── 14. Budgets Grid Layout ────────────────────────────────────────────── */
+.budgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.budget-card-compact {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.budget-card-compact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.ios-badge.warning {
+  background: rgba(255, 149, 0, 0.15);
+  color: #FF9500;
+}
+
+/* ─── 15. iOS Checkbox & Toggles ─────────────────────────────────────────── */
+.ios-checkbox {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--ios-border);
+  background-color: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.ios-checkbox:checked {
+  background-color: var(--ios-primary);
+  border-color: var(--ios-primary);
+}
+
+.ios-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ─── 16. Print Media Queries (PDF Export Mode) ─────────────────────────── */
+/* Sembunyikan kanvas laporan di layar normal */
+.print-only-canvas {
+  display: none;
+}
+
+@media print {
+  /* 1. Sembunyikan Sidebar, Navigasi, Modal, dan Konten Utama Aplikasi */
+  .sidebar, .bottom-nav, .fab, .modal-overlay, main > *:not(.print-only-canvas) {
+    display: none !important;
+  }
+
+  /* 2. Tampilkan Kanvas Rahasia */
+  .print-only-canvas {
+    display: block !important;
+    width: 100%;
+    color: black;
+  }
+
+  /* 3. Reset warna latar dan bayangan agar tinta PDF bersih/hemat */
+  body, .app-layout {
+    background-color: white !important;
+  }
+  
+  .ios-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    break-inside: avoid; /* Mencegah kartu terpotong di antara 2 halaman kertas */
+  }
+
+  @page {
+    margin: 1.5cm; /* Margin kertas A4 */
+  }
+}
