@@ -21,7 +21,9 @@ const translations = {
     monthlyLimit: "Batas Bulanan",
     saving: "Menyimpan...",
     setBudget: "Simpan Anggaran",
-    currentBudgets: "Anggaran Saat Ini"
+    currentBudgets: "Anggaran Saat Ini",
+    used: "Terpakai:",
+    limit: "Batas:"
   },
   en: {
     title: "Budgets",
@@ -29,7 +31,9 @@ const translations = {
     monthlyLimit: "Monthly Limit",
     saving: "Saving...",
     setBudget: "Set Budget",
-    currentBudgets: "Current Budgets"
+    currentBudgets: "Current Budgets",
+    used: "Used:",
+    limit: "Limit:"
   }
 };
 
@@ -39,7 +43,9 @@ const CATEGORY_TRANSLATIONS: Record<string, { id: string; en: string }> = {
   transport: { id: "Transportasi", en: "Transport" },
   housing: { id: "Tempat Tinggal", en: "Housing" },
   utilities: { id: "Tagihan", en: "Utilities" },
+  bills: { id: "Tagihan", en: "Bills" }, // Jaga-jaga jika menggunakan 'bills'
   fun: { id: "Hiburan", en: "Fun" },
+  entertainment: { id: "Hiburan", en: "Entertainment" }, // Ini yang memperbaiki masalah Anda
   health: { id: "Kesehatan", en: "Health" },
   shopping: { id: "Belanja", en: "Shopping" },
   education: { id: "Pendidikan", en: "Education" },
@@ -203,8 +209,8 @@ export default function BudgetModal({ onClose, onSave, onDelete, budgets, spentB
                       </div>
 
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 12 }}>
-                        <span style={{ color: "var(--ios-text-muted)" }}>Terpakai: <strong style={{ color: "var(--ios-text-main)" }}>{spent.toLocaleString()}</strong></span>
-                        <span style={{ color: "var(--ios-text-muted)" }}>Batas: <strong>{b.limit.toLocaleString()}</strong></span>
+                        <span style={{ color: "var(--ios-text-muted)" }}>{t.used} <strong style={{ color: "var(--ios-text-main)" }}>{spent.toLocaleString()}</strong></span>
+                        <span style={{ color: "var(--ios-text-muted)" }}>{t.limit} <strong>{b.limit.toLocaleString()}</strong></span>
                       </div>
 
                       <div className="budget-bar-track ios-track" style={{ background: 'var(--ios-border-light)', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>

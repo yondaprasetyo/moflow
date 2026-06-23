@@ -91,8 +91,8 @@ const TRANSLATIONS = {
     start: "Start",
     end: "End",
     reportContent: "Report Content",
-    analyticsSummary: "📊 Analytics & Summary",
-    detailedTxList: "🧾 Transaction List",
+    analyticsSummary: "Analytics & Summary",
+    detailedTxList: "Transaction List",
     printPdfNow: "Print PDF Now",
     financialReport: "MoFlow Financial Report",
     period: "Period",
@@ -169,10 +169,10 @@ const TRANSLATIONS = {
     start: "Mulai",
     end: "Sampai",
     reportContent: "Konten Laporan",
-    analyticsSummary: "📊 Analisis & Ringkasan",
-    detailedTxList: "🧾 Daftar Transaksi",
+    analyticsSummary: "Analisis & Ringkasan",
+    detailedTxList: "Daftar Transaksi",
     printPdfNow: "Cetak PDF Sekarang",
-    financialReport: "Laporan Keuangan MoFlow",
+    financialReport: "Laporan Keuangan",
     period: "Periode",
     cashflowSummary: "Ringkasan Arus Kas",
     totalIncome: "Total Pemasukan",
@@ -196,19 +196,27 @@ const NAV = [
 const iOS_COLORS = ["#007AFF", "#34C759", "#FF3B30", "#FF9500", "#AF52DE", "#5AC8FA", "#FF2D55", "#4CD964"];
 
 const CATEGORY_META: Record<string, { icon: string; label: { id: string; en: string } }> = {
+  // Pengeluaran
   food: { icon: "🍴", label: { id: "Makanan", en: "Food" } },
   transport: { icon: "🚗", label: { id: "Transportasi", en: "Transport" } },
   housing: { icon: "🏠", label: { id: "Tempat Tinggal", en: "Housing" } },
   utilities: { icon: "💡", label: { id: "Tagihan", en: "Utilities" } },
-  fun: { icon: "🎮", label: { id: "Hiburan", en: "Fun" } },
+  entertainment: { icon: "🎮", label: { id: "Hiburan", en: "Entertainment" } }, // Sudah diperbaiki dari 'fun'
   health: { icon: "❤", label: { id: "Kesehatan", en: "Health" } },
   shopping: { icon: "🛍", label: { id: "Belanja", en: "Shopping" } },
   education: { icon: "🎓", label: { id: "Pendidikan", en: "Education" } },
   travel: { icon: "✈", label: { id: "Liburan", en: "Travel" } },
+  other_expense: { icon: "💸", label: { id: "Pengeluaran Lainnya", en: "Other Expense" } }, // Tambahan baru
+  
+  // Pemasukan
   salary: { icon: "💼", label: { id: "Gaji", en: "Salary" } },
   freelance: { icon: "💻", label: { id: "Pekerjaan Lepas", en: "Freelance" } },
   investment: { icon: "📈", label: { id: "Investasi", en: "Investment" } },
-  other: { icon: "💬", label: { id: "Lainnya", en: "Other" } },
+  gift: { icon: "🎁", label: { id: "Hadiah", en: "Gift" } }, // Tambahan baru
+  other_income: { icon: "💵", label: { id: "Pemasukan Lainnya", en: "Other Income" } }, // Tambahan baru
+  
+  // // Fallback (Jaga-jaga jika ada data lama)
+  // other: { icon: "💬", label: { id: "Lainnya", en: "Other" } },
 };
 
 export default function Dashboard() {
@@ -1369,7 +1377,7 @@ export default function Dashboard() {
       {/* Modal Pengaturan Cetak PDF */}
       {showExportModal && (
         <div 
-          className="modal-overlay" 
+          className="modal-overlay non-printable" 
           onClick={(e) => e.target === e.currentTarget && setShowExportModal(false)}
           style={{ zIndex: 2000 }}
         >
@@ -1487,17 +1495,26 @@ export default function Dashboard() {
                 <label className="form-label" style={{ marginBottom: 12 }}>{words.reportContent}</label>
                 <div style={{ background: "var(--ios-card-bg)", borderRadius: 12, border: "1px solid var(--ios-border-light)", overflow: "hidden" }}>
                   <label className="setting-row" style={{ cursor: "pointer", borderBottom: "1px solid var(--ios-border-light)", padding: "16px" }}>
-                    <div className="row-left" style={{ fontSize: 14 }}>{words.analyticsSummary}</div>
+                    <div className="row-left" style={{ fontSize: 14 }}>📊 {words.analyticsSummary}</div>
                     <div className="row-right"><input type="checkbox" className="ios-checkbox" checked={exportIncludeAnalytics} onChange={(e) => setExportIncludeAnalytics(e.target.checked)} /></div>
                   </label>
                   <label className="setting-row" style={{ cursor: "pointer", padding: "16px" }}>
-                    <div className="row-left" style={{ fontSize: 14 }}>{words.detailedTxList}</div>
+                    <div className="row-left" style={{ fontSize: 14 }}>🧾 {words.detailedTxList}</div>
                     <div className="row-right"><input type="checkbox" className="ios-checkbox" checked={exportIncludeTx} onChange={(e) => setExportIncludeTx(e.target.checked)} /></div>
                   </label>
                 </div>
               </div>
 
-              <button className="btn btn-primary ios-btn-primary" onClick={() => { setShowExportModal(false); setTimeout(() => window.print(), 300); }} disabled={!exportIncludeAnalytics && !exportIncludeTx}>
+              <button 
+                className="btn btn-primary ios-btn-primary" 
+                onClick={() => {
+                  // Panggil print secara langsung tanpa delay
+                  window.print();
+                  // Setelah dialog print ditutup oleh user, modal ini baru di-unmount
+                  setShowExportModal(false); 
+                }} 
+                disabled={!exportIncludeAnalytics && !exportIncludeTx}
+              >
                 {words.printPdfNow}
               </button>
             </div>
@@ -1557,26 +1574,89 @@ export default function Dashboard() {
 
       {/* KANVAS RAHASIA UNTUK CETAK PDF */}
       <div className="print-only-canvas">
-        <div style={{ textAlign: "center", marginBottom: 30, borderBottom: "2px solid #000", paddingBottom: 16 }}>
-          <h1 style={{ margin: 0, fontSize: 24 }}>{words.financialReport}</h1>
-          <p style={{ margin: "8px 0 0 0", color: "#666" }}>
-            {words.period}: {exportPeriod === "monthly" ? monthLabel : `${format(new Date(exportStartDate), "dd MMM yyyy")} - ${format(new Date(exportEndDate), "dd MMM yyyy")}`}
-          </p>
+        
+        {/* CSS INJEKSI KHUSUS PRINT A4 */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @media print {
+            @page {
+              size: A4 portrait;
+              margin: 20mm; /* Memaksa margin sama rata di semua sisi kertas */
+            }
+            body, html {
+              margin: 0 !important;
+              padding: 0 !important;
+              background-color: white !important;
+            }
+            /* Mereset padding/margin dari layout utama aplikasi agar tidak menggeser PDF */
+            .app-layout, .smart-main, .main-content {
+              padding: 0 !important;
+              margin: 0 !important;
+              max-width: 100% !important;
+              width: 100% !important;
+            }
+            .print-only-canvas {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 auto !important;
+              display: block !important;
+            }
+          }
+        `}} />
+
+        {/* ── 1. KOP SURAT (HEADER Laporan) ── */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, borderBottom: "2px solid #000", paddingBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ color: "#007AFF" }}>
+               <SavingsRoundedIcon style={{ fontSize: 42 }} />
+            </div>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#000", letterSpacing: "-0.5px" }}>MoFlow</h2>
+              <div style={{ fontSize: 13, color: "#666", fontWeight: 500, letterSpacing: "0.5px" }}>MONEY TRACKER APP</div>
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <h1 style={{ margin: 0, fontSize: 18, textTransform: "uppercase", letterSpacing: "1px", color: "#000" }}>
+              {words.financialReport}
+            </h1>
+            <p style={{ margin: "4px 0 0 0", color: "#666", fontSize: 13 }}>
+              {words.period}: {exportPeriod === "monthly" ? monthLabel : `${format(new Date(exportStartDate), "dd MMM yyyy")} - ${format(new Date(exportEndDate), "dd MMM yyyy")}`}
+            </p>
+          </div>
         </div>
 
+        {/* ── 2. INFORMASI KEPEMILIKAN AKUN (Legal Statement) ── */}
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 32, padding: "16px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #eee" }}>
+          <div>
+            <div style={{ color: "#666", marginBottom: 4, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 600 }}>
+              {language === "id" ? "Diterbitkan Untuk :" : "Issued To :"}
+            </div>
+            <div style={{ fontWeight: 800, fontSize: 16, color: "#000", textTransform: "uppercase" }}>{userName}</div>
+            <div style={{ fontSize: 12, color: "#666", marginTop: 2 }}>{userBio}</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ color: "#666", marginBottom: 4, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 600 }}>
+               {language === "id" ? "Tanggal Cetak Dokumen :" : "Document Printed On :"}
+            </div>
+            <div style={{ fontWeight: 600, color: "#000", fontSize: 14 }}>
+              {format(new Date(), "dd MMMM yyyy", { locale: language === "id" ? localeID : localeEN })}
+            </div>
+          </div>
+        </div>
+
+        {/* ── 3. RINGKASAN ARUS KAS ── */}
         {exportIncludeAnalytics && (
           <div style={{ marginBottom: 32 }}>
             <h2 style={{ fontSize: 18, marginBottom: 12 }}>{words.cashflowSummary}</h2>
             <div style={{ display: "flex", gap: 16 }}>
-              <div className="card ios-card" style={{ flex: 1 }}>
+              <div className="card ios-card" style={{ flex: 1, border: "1px solid #eee", boxShadow: "none" }}>
                 <div style={{ fontSize: 14, color: "#666" }}>{words.totalIncome}</div>
                 <div style={{ fontSize: 20, fontWeight: "bold", color: "#34C759" }}>{formatCurrency(exportSummary.income)}</div>
               </div>
-              <div className="card ios-card" style={{ flex: 1 }}>
+              <div className="card ios-card" style={{ flex: 1, border: "1px solid #eee", boxShadow: "none" }}>
                 <div style={{ fontSize: 14, color: "#666" }}>{words.totalExpense}</div>
                 <div style={{ fontSize: 20, fontWeight: "bold", color: "#FF3B30" }}>{formatCurrency(exportSummary.expense)}</div>
               </div>
-              <div className="card ios-card" style={{ flex: 1 }}>
+              <div className="card ios-card" style={{ flex: 1, border: "1px solid #eee", boxShadow: "none" }}>
                 <div style={{ fontSize: 14, color: "#666" }}>{words.surplusDeficit}</div>
                 <div style={{ fontSize: 20, fontWeight: "bold", color: exportSummary.balance >= 0 ? "#007AFF" : "#FF3B30" }}>
                   {formatCurrency(exportSummary.balance)}
@@ -1586,34 +1666,56 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* ── 4. DAFTAR TRANSAKSI (E-Statement Detail) ── */}
         {exportIncludeTx && (
           <div>
             <h2 style={{ fontSize: 18, marginBottom: 12 }}>{words.detailedTxList}</h2>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid #ddd", textAlign: "left" }}>
-                  <th style={{ padding: "8px 4px" }}>{words.colDate}</th>
-                  <th style={{ padding: "8px 4px" }}>{words.colCategory}</th>
-                  <th style={{ padding: "8px 4px" }}>{words.colNote}</th>
-                  <th style={{ padding: "8px 4px", textAlign: "right" }}>{words.colAmount}</th>
+                <tr style={{ borderBottom: "2px solid #000", textAlign: "left", fontSize: 13 }}>
+                  <th style={{ padding: "10px 4px", width: "12%" }}>{words.colDate}</th>
+                  <th style={{ padding: "10px 4px", width: "18%" }}>{words.colCategory}</th>
+                  <th style={{ padding: "10px 4px", width: "25%" }}>{words.colNote}</th>
+                  <th style={{ padding: "10px 4px", width: "15%", textAlign: "right" }}>Debit (DB)</th>
+                  <th style={{ padding: "10px 4px", width: "15%", textAlign: "right" }}>Kredit (CR)</th>
+                  <th style={{ padding: "10px 4px", width: "15%", textAlign: "right" }}>Saldo</th>
                 </tr>
               </thead>
               <tbody>
-                {exportData
-                  .sort((a, b) => b.date.localeCompare(a.date))
-                  .map(t => {
-                    const meta = getCategoryMeta(t.category);
-                    return (
-                      <tr key={t.id} style={{ borderBottom: "1px solid #eee" }}>
-                        <td style={{ padding: "8px 4px" }}>{t.date}</td>
-                        <td style={{ padding: "8px 4px" }}>{meta.icon} {meta.label}</td>
-                        <td style={{ padding: "8px 4px", color: "#666" }}>{t.note || "-"}</td>
-                        <td style={{ padding: "8px 4px", textAlign: "right", color: t.type === "income" ? "#34C759" : "#FF3B30", fontWeight: "bold" }}>
-                          {t.type === "income" ? "+" : "-"}{formatCurrency(t.amount)}
-                        </td>
-                      </tr>
-                    )
-                })}
+                {(() => {
+                  let runningBalance = 0; 
+                  
+                  return [...exportData]
+                    .sort((a, b) => a.date.localeCompare(b.date))
+                    .map(t => {
+                      const meta = getCategoryMeta(t.category);
+                      
+                      if (t.type === "income") {
+                        runningBalance += t.amount;
+                      } else {
+                        runningBalance -= t.amount;
+                      }
+
+                      return (
+                        <tr key={t.id} style={{ borderBottom: "1px solid #eee" }}>
+                          <td style={{ padding: "10px 4px", whiteSpace: "nowrap" }}>{t.date}</td>
+                          {/* MENGHILANGKAN ICON (EMOJI), HANYA NAMA KATEGORI SAJA */}
+                          <td style={{ padding: "10px 4px", whiteSpace: "nowrap" }}>{meta.label}</td>
+                          <td style={{ padding: "10px 4px", color: "#666" }}>{t.note || "-"}</td>
+                          
+                          <td style={{ padding: "10px 4px", textAlign: "right", color: t.type === "expense" ? "#FF3B30" : "#bbb" }}>
+                            {t.type === "expense" ? formatCurrency(t.amount) : "-"}
+                          </td>
+                          <td style={{ padding: "10px 4px", textAlign: "right", color: t.type === "income" ? "#34C759" : "#bbb" }}>
+                            {t.type === "income" ? formatCurrency(t.amount) : "-"}
+                          </td>
+                          <td style={{ padding: "10px 4px", textAlign: "right", fontWeight: "bold", color: runningBalance < 0 ? "#FF3B30" : "#000" }}>
+                            {formatCurrency(runningBalance)}
+                          </td>
+                        </tr>
+                      )
+                    });
+                })()}
               </tbody>
             </table>
           </div>
