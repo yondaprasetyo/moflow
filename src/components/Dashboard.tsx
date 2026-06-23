@@ -1199,22 +1199,26 @@ export default function Dashboard() {
                   <input 
                     type="month" 
                     className="form-input" 
+                    value={currentMonth} 
+                    onChange={(e) => setCurrentMonth(e.target.value)}
                     style={{ 
                       WebkitAppearance: "none",
+                      appearance: "none",
                       display: "block",
                       width: "100%", 
-                      minHeight: "44px",
+                      maxWidth: "100%",
+                      minWidth: 0,
                       boxSizing: "border-box", 
                       margin: 0, 
-                      border: "none", 
-                      backgroundColor: "var(--ios-input)", 
-                      borderRadius: "10px", 
+                      minHeight: "44px",
                       padding: "10px 12px",
+                      backgroundColor: "var(--ios-input)", 
+                      border: "none", 
+                      borderRadius: "10px", 
                       color: "inherit",
-                      fontFamily: "inherit"
+                      fontFamily: "inherit",
+                      overflow: "hidden"
                     }} 
-                    value={currentMonth} 
-                    onChange={(e) => setCurrentMonth(e.target.value)} 
                   />
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -1223,23 +1227,27 @@ export default function Dashboard() {
                       <input 
                         type="date" 
                         className="form-input" 
+                        value={exportStartDate} 
+                        onChange={(e) => setExportStartDate(e.target.value)}
                         style={{ 
                           WebkitAppearance: "none",
+                          appearance: "none",
                           display: "block",
                           width: "100%", 
-                          minHeight: "44px",
+                          maxWidth: "100%",
+                          minWidth: 0,
                           boxSizing: "border-box", 
                           margin: 0, 
-                          border: "none", 
+                          minHeight: "44px",
+                          padding: "10px 12px",
                           backgroundColor: "var(--ios-input)", 
+                          border: "none", 
                           borderRadius: "10px", 
-                          padding: "10px 12px", 
                           fontSize: "13px",
                           color: "inherit",
-                          fontFamily: "inherit"
-                        }} 
-                        value={exportStartDate} 
-                        onChange={(e) => setExportStartDate(e.target.value)} 
+                          fontFamily: "inherit",
+                          overflow: "hidden"
+                        }}  
                       />
                     </div>
                     <div>
@@ -1247,23 +1255,27 @@ export default function Dashboard() {
                       <input 
                         type="date" 
                         className="form-input" 
+                        value={exportEndDate} 
+                        onChange={(e) => setExportEndDate(e.target.value)}
                         style={{ 
                           WebkitAppearance: "none",
+                          appearance: "none",
                           display: "block",
                           width: "100%", 
-                          minHeight: "44px",
+                          maxWidth: "100%",
+                          minWidth: 0,
                           boxSizing: "border-box", 
                           margin: 0, 
-                          border: "none", 
+                          minHeight: "44px",
+                          padding: "10px 12px",
                           backgroundColor: "var(--ios-input)", 
+                          border: "none", 
                           borderRadius: "10px", 
-                          padding: "10px 12px", 
                           fontSize: "13px",
                           color: "inherit",
-                          fontFamily: "inherit"
-                        }} 
-                        value={exportEndDate} 
-                        onChange={(e) => setExportEndDate(e.target.value)} 
+                          fontFamily: "inherit",
+                          overflow: "hidden"
+                        }}  
                       />
                     </div>
                   </div>

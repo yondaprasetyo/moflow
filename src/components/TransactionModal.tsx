@@ -199,17 +199,22 @@ export default function TransactionModal({ onClose, onSave, onDelete, initial, c
               value={date}
               onChange={(e) => setDate(e.target.value)}
               style={{
-                WebkitAppearance: "none", // Mereset styling bawaan iOS
+                WebkitAppearance: "none",
+                appearance: "none",
                 display: "block",
                 width: "100%",
-                minHeight: "44px", // Standar area sentuh Apple
-                boxSizing: "border-box",
+                maxWidth: "100%",      /* KUNCI 1: Cegah elemen melewati parent */
+                minWidth: 0,           /* KUNCI 2: Fix bug Flexbox di Safari */
+                boxSizing: "border-box", 
+                margin: 0,             /* KUNCI 3: Reset margin bawaan iOS */
+                minHeight: "44px",
                 padding: "10px 12px",
                 backgroundColor: "var(--ios-input)",
                 border: "none",
                 borderRadius: "10px",
                 color: "inherit",
-                fontFamily: "inherit"
+                fontFamily: "inherit",
+                overflow: "hidden"     /* KUNCI 4: Potong elemen jika masih memaksa keluar */
               }}
             />
           </div>
