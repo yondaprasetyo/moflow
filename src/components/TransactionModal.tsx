@@ -104,13 +104,15 @@ export default function TransactionModal({ onClose, onSave, onDelete, initial, c
       <div 
         className="modal"
         style={{
+          width: "90%",
+          maxWidth: "400px",
           maxHeight: "90vh",     
           display: "flex",       
           flexDirection: "column",
           overflow: "hidden",    
           borderRadius: "16px",
           margin: "auto",
-          padding: 0             /* Kita hilangkan padding luar... */
+          padding: 0             
         }}
       >
         {/* ── 1. HEADER (FIXED DI ATAS) ── */}
@@ -118,7 +120,7 @@ export default function TransactionModal({ onClose, onSave, onDelete, initial, c
           className="modal-header" 
           style={{ 
             flexShrink: 0, 
-            padding: "24px 24px 16px 24px", /* ...lalu kita pindahkan padding-nya ke sini */
+            padding: "24px 24px 16px 24px",
             marginBottom: 0,
             borderBottom: "1px solid var(--ios-border-light, #eaeaea)"
           }}
@@ -132,8 +134,9 @@ export default function TransactionModal({ onClose, onSave, onDelete, initial, c
         {/* ── 2. AREA KONTEN FORM (BISA DI-SCROLL) ── */}
         <div style={{ 
           overflowY: "auto", 
+          overflowX: "hidden",
           flex: 1, 
-          padding: "16px 24px 24px 24px" /* ...dan ke sini agar kontennya tidak menabrak pinggir */
+          padding: "16px 24px 24px 24px"
         }}>
           
           <div className="type-toggle">

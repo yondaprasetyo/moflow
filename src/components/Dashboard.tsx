@@ -14,14 +14,12 @@ import DashboardIcon from '@mui/icons-material/DashboardRounded';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLongRounded';
 import AnalyticsIcon from '@mui/icons-material/AnalyticsRounded';
 import PieChartIcon from '@mui/icons-material/PieChartRounded';
-import PersonIcon from '@mui/icons-material/PersonRounded';
 import AddIcon from '@mui/icons-material/AddRounded';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightIcon from '@mui/icons-material/ChevronRightRounded';
 import FileDownloadIcon from '@mui/icons-material/FileDownloadRounded';
 import SavingsRoundedIcon from '@mui/icons-material/SavingsRounded';
 import { changeUserPassword, logOut } from "@/lib/firebase";
-
 
 type Page = "dashboard" | "transactions" | "analytics" | "budgets" | "profile";
 type Theme = "light" | "dark";
@@ -60,9 +58,53 @@ const TRANSLATIONS = {
     language: "Language",
     currency: "Currency",
     exportReport: "Export Financial Report (PDF)",
-    accountDetails: "Account Details",
     preferences: "Preferences",
     date: "Date",
+    // Tambahan baru untuk halaman dalam
+    sortNewest: "Sort by: Newest",
+    sortHighest: "Sort by: Highest",
+    sortLowest: "Sort by: Lowest",
+    vsLastMonth: "vs last month",
+    categoryBreakdown: "Category Breakdown",
+    cashflowTrend: "Monthly Cashflow Trend",
+    cashflowDesc: "Viewing daily net accumulation (Income - Expenses)",
+    totalBudget: "Total Budget",
+    totalSpent: "Total Spent",
+    remainingBudget: "Remaining Budget",
+    noBudget: "No budgets created yet.",
+    createFirstBudget: "Create First Budget",
+    editProfile: "Edit Profile",
+    fullName: "Full Name",
+    bioJob: "Bio / Occupation",
+    saveProfile: "Save Profile",
+    changePassword: "Change Password",
+    newPassword: "New Password",
+    enterNewPassword: "Enter new password",
+    savePassword: "Save Password",
+    logout: "Log Out",
+    reportSettings: "Report Settings",
+    reportPeriod: "Report Period",
+    monthly: "Monthly",
+    dateRange: "Date Range",
+    selectReportMonth: "Select Report Month",
+    selectStartEndDate: "Select Start & End Date",
+    start: "Start",
+    end: "End",
+    reportContent: "Report Content",
+    analyticsSummary: "📊 Analytics & Summary",
+    detailedTxList: "🧾 Transaction List",
+    printPdfNow: "Print PDF Now",
+    financialReport: "MoFlow Financial Report",
+    period: "Period",
+    cashflowSummary: "Cashflow Summary",
+    totalIncome: "Total Income",
+    totalExpense: "Total Expense",
+    surplusDeficit: "Surplus / Deficit",
+    colDate: "Date",
+    colCategory: "Category",
+    colNote: "Note",
+    colAmount: "Amount",
+    printedAutomatically: "Printed automatically from MoFlow system on"
   },
   id: {
     overview: "Ringkasan",
@@ -94,9 +136,53 @@ const TRANSLATIONS = {
     language: "Bahasa",
     currency: "Mata Uang",
     exportReport: "Cetak Laporan Keuangan (PDF)",
-    accountDetails: "Detail Akun",
     preferences: "Preferensi",
-    date: "Date",
+    date: "Tanggal",
+    // Tambahan baru untuk halaman dalam
+    sortNewest: "Urutkan: Terbaru",
+    sortHighest: "Urutkan: Tertinggi",
+    sortLowest: "Urutkan: Terendah",
+    vsLastMonth: "vs bulan lalu",
+    categoryBreakdown: "Breakdown Kategori",
+    cashflowTrend: "Tren Arus Kas Bulanan",
+    cashflowDesc: "Melihat akumulasi bersih (Pemasukan - Pengeluaran) harian",
+    totalBudget: "Total Anggaran",
+    totalSpent: "Total Terpakai",
+    remainingBudget: "Sisa Anggaran",
+    noBudget: "Belum ada anggaran yang dibuat.",
+    createFirstBudget: "Buat Anggaran Pertama",
+    editProfile: "Edit Profil",
+    fullName: "Nama Lengkap",
+    bioJob: "Bio / Pekerjaan",
+    saveProfile: "Simpan Profil",
+    changePassword: "Ubah Password",
+    newPassword: "Password Baru",
+    enterNewPassword: "Masukkan password baru",
+    savePassword: "Simpan Password",
+    logout: "Keluar (Logout)",
+    reportSettings: "Pengaturan Laporan",
+    reportPeriod: "Periode Laporan",
+    monthly: "Bulanan",
+    dateRange: "Rentang Tanggal",
+    selectReportMonth: "Pilih Bulan Laporan",
+    selectStartEndDate: "Pilih Tanggal Awal & Akhir",
+    start: "Mulai",
+    end: "Sampai",
+    reportContent: "Konten Laporan",
+    analyticsSummary: "📊 Analisis & Ringkasan",
+    detailedTxList: "🧾 Daftar Transaksi",
+    printPdfNow: "Cetak PDF Sekarang",
+    financialReport: "Laporan Keuangan MoFlow",
+    period: "Periode",
+    cashflowSummary: "Ringkasan Arus Kas",
+    totalIncome: "Total Pemasukan",
+    totalExpense: "Total Pengeluaran",
+    surplusDeficit: "Surplus / Defisit",
+    colDate: "Tanggal",
+    colCategory: "Kategori",
+    colNote: "Catatan",
+    colAmount: "Nominal",
+    printedAutomatically: "Dicetak secara otomatis dari sistem MoFlow pada"
   }
 };
 
@@ -108,7 +194,7 @@ const NAV = [
 ] as const;
 
 const iOS_COLORS = ["#007AFF", "#34C759", "#FF3B30", "#FF9500", "#AF52DE", "#5AC8FA", "#FF2D55", "#4CD964"];
-// ── DATA KATEGORI MULTI-BAHASA ──
+
 const CATEGORY_META: Record<string, { icon: string; label: { id: string; en: string } }> = {
   food: { icon: "🍴", label: { id: "Makanan", en: "Food" } },
   transport: { icon: "🚗", label: { id: "Transportasi", en: "Transport" } },
@@ -132,12 +218,12 @@ export default function Dashboard() {
   const [editTx, setEditTx] = useState<Transaction | null>(null);
   const [showBudget, setShowBudget] = useState(false);
 
-  // User Preferences States
   const [theme, setTheme] = useState<Theme>("light");
   const [language, setLanguage] = useState<Language>("id");
   const [currency, setCurrency] = useState<Currency>("IDR");
   const [txFilter, setTxFilter] = useState<"all" | "income" | "expense">("all");
   const [txSort, setTxSort] = useState<"newest" | "highest" | "lowest">("newest");
+  
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportPeriod, setExportPeriod] = useState<"monthly" | "custom">("monthly");
   const [exportStartDate, setExportStartDate] = useState(format(new Date(), "yyyy-MM-01"));
@@ -145,7 +231,6 @@ export default function Dashboard() {
   const [exportIncludeTx, setExportIncludeTx] = useState(true);
   const [exportIncludeAnalytics, setExportIncludeAnalytics] = useState(true);
 
-  // State Profil User
   const [userName, setUserName] = useState("Yonda Eko Prasetyo");
   const [userBio, setUserBio] = useState("Spatial Data Analyst & Researcher");
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -167,7 +252,21 @@ export default function Dashboard() {
 
   const { transactions, budgets, summary, loading, addTransaction, updateTransaction, deleteTransaction, setBudget, deleteBudget } = useMoneyData(currentMonth);
 
-  // Sinkronisasi tema HTML
+  // --- MENGAMBIL DATA BULAN LALU ---
+  const prevMonthStr = useMemo(() => format(subMonths(new Date(`${currentMonth}-01`), 1), "yyyy-MM"), [currentMonth]);
+  const { summary: prevSummary } = useMoneyData(prevMonthStr);
+
+  // --- KALKULASI PERSENTASE (Month-over-Month) ---
+  const momIncome = useMemo(() => {
+    if (!prevSummary || prevSummary.totalIncome === 0) return summary.totalIncome > 0 ? 100 : 0;
+    return ((summary.totalIncome - prevSummary.totalIncome) / prevSummary.totalIncome) * 100;
+  }, [summary.totalIncome, prevSummary]);
+
+  const momExpense = useMemo(() => {
+    if (!prevSummary || prevSummary.totalExpense === 0) return summary.totalExpense > 0 ? 100 : 0;
+    return ((summary.totalExpense - prevSummary.totalExpense) / prevSummary.totalExpense) * 100;
+  }, [summary.totalExpense, prevSummary]);
+
   useEffect(() => {
     const root = window.document.documentElement;
     if (theme === "dark") {
@@ -210,7 +309,7 @@ export default function Dashboard() {
 
   const monthLabel = useMemo(() => {
     const dateObj = new Date(`${currentMonth}-01`);
-    return format(dateObj, "MMMM yyyy", { locale: language === "id" ? localeID : localeEN });
+    return format(dateObj, "MMM yyyy", { locale: language === "id" ? localeID : localeEN });
   }, [currentMonth, language]);
 
   const dailyData = useMemo(() => {
@@ -345,11 +444,7 @@ export default function Dashboard() {
 
   return (
     <div className={`app-layout ${theme === "dark" ? "ios-dark" : "ios-light"}`}>
-      
-      {/* ── CSS SAKTI: PENGATURAN RESPONSIVE DESKTOP & MOBILE ── */}
-      {/* ── CSS SAKTI: PENGATURAN RESPONSIVE DESKTOP & MOBILE ── */}
       <style dangerouslySetInnerHTML={{__html: `
-        /* PENGATURAN DEFAULT: MOBILE (Layar Kecil) */
         .smart-header {
           position: fixed;
           top: 0; left: 0; right: 0;
@@ -366,39 +461,31 @@ export default function Dashboard() {
           box-sizing: border-box;
         }
         .smart-main {
-          padding-top: 64px;
+          padding-top: 88px;
           padding-bottom: 110px;
         }
-        .mobile-only-logo {
-          display: flex;
-        }
-        .smart-bottom-nav {
-          display: flex;
-        }
+        .mobile-only-logo { display: flex; }
+        .smart-bottom-nav { display: flex; }
 
-        /* PENGATURAN DESKTOP & TABLET (Layar Lebar > 768px) */
         @media (min-width: 768px) {
           .smart-header {
             position: sticky;
-            top: 0;
-            left: auto; right: auto;
-            padding: 16px 0;
-            margin-bottom: 24px;
+            top: 0; left: auto; right: auto;
+            padding: 16px 0; margin-bottom: 24px;
           }
           .smart-main {
-            padding-top: 0;
+            padding-top: 0; 
             padding-bottom: 40px;
-            /* 👇 INI KUNCI UNTUK MELEBARKAN KONTEN KE KANAN 👇 */
-            max-width: 1200px !important; /* Batas wajar di desktop agar rapi */
-            width: 100% !important;
-            padding-right: 32px !important; /* Memberi ruang napas di kanan */
+            
+            /* Penyesuaian khusus Desktop & Tab */
+            max-width: none !important; 
+            width: auto !important;
+            flex: 1 !important;
+            padding-right: 32px !important;
+            box-sizing: border-box;
           }
-          .mobile-only-logo {
-            display: none !important;
-          }
-          .smart-bottom-nav {
-            display: none !important;
-          }
+          .mobile-only-logo { display: none !important; }
+          .smart-bottom-nav { display: none !important; }
         }
       `}} />
 
@@ -431,13 +518,9 @@ export default function Dashboard() {
       </aside>
 
       {/* ── KONTEN UTAMA ── */}
-      {/* Menggunakan class "smart-main" yang diatur secara responsif di atas */}
       <main className="main-content smart-main printable-area">
         
-        {/* ── HEADER MOBILE/DESKTOP ── */}
-        {/* Menggunakan class "smart-header" yang diatur secara responsif di atas */}
         <header className="app-header smart-header non-printable">
-          {/* Logo & Judul Halaman */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div className="mobile-only-logo" style={{ color: "var(--ios-primary)" }}>
                <SavingsRoundedIcon fontSize="small" />
@@ -448,7 +531,6 @@ export default function Dashboard() {
           </div>
           
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            {/* Navigasi Bulan */}
             {page !== "profile" && (
               <div 
                 className="month-nav ios-month-nav" 
@@ -466,7 +548,7 @@ export default function Dashboard() {
                 </button>
                 <span 
                   className="month-label" 
-                  style={{ fontSize: 13, fontWeight: 600, margin: "0 4px", minWidth: 70, textAlign: "center" }}
+                  style={{ fontSize: 13, fontWeight: 600, margin: "0 4px", minWidth: 50, textAlign: "center" }}
                 >
                   {monthLabel}
                 </span>
@@ -480,7 +562,6 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Tombol Profil Bulat */}
             <button 
               onClick={() => setPage("profile")}
               style={{
@@ -495,7 +576,6 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* ── ISI HALAMAN (DASHBOARD, TRANSACTIONS, ETC) ── */}
         {loading ? (
           <div className="loader-container">
             <div className="ios-spinner"></div>
@@ -546,39 +626,16 @@ export default function Dashboard() {
                                   <stop offset="95%" stopColor="#FF3B30" stopOpacity={0} />
                                 </linearGradient>
                               </defs>
-                              
                               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--ios-border-light)" />
-                              
-                              <XAxis 
-                                dataKey="day" 
-                                tick={{ fontSize: 11, fill: "#8E8E93" }} 
-                                axisLine={false} 
-                                tickLine={false} 
-                                tickMargin={10} 
-                              />
+                              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#8E8E93" }} axisLine={false} tickLine={false} tickMargin={10} />
                               <YAxis hide />
                               <Tooltip
                                 contentStyle={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", border: "none", borderRadius: 12, fontSize: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
                                 formatter={(value: any) => formatCurrency(value)}
-                                labelFormatter={(label) => `${words.date || 'Tanggal'} ${label}`}
+                                labelFormatter={(label) => `${words.date} ${label}`}
                               />
-                              
-                              <Area 
-                                type="monotone" 
-                                dataKey="income" 
-                                stroke="#34C759" 
-                                strokeWidth={3} 
-                                fillOpacity={1} 
-                                fill="url(#colorIncome)" 
-                              />
-                              <Area 
-                                type="monotone" 
-                                dataKey="expense" 
-                                stroke="#FF3B30" 
-                                strokeWidth={3} 
-                                fillOpacity={1} 
-                                fill="url(#colorExpense)" 
-                              />
+                              <Area type="monotone" dataKey="income" stroke="#34C759" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
+                              <Area type="monotone" dataKey="expense" stroke="#FF3B30" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
                             </AreaChart>
                           </ResponsiveContainer>
                         </div>
@@ -624,22 +681,24 @@ export default function Dashboard() {
                           {words.manage}
                         </button>
                       </div>
-                      {budgets.map((b) => {
-                        const meta = getCategoryMeta(b.category);
-                        const spent = expenseByCategory[b.category] ?? 0;
-                        const pct = Math.min((spent / b.limit) * 100, 100);
-                        return (
-                          <div key={b.id} className="budget-item ios-budget">
-                            <div className="budget-header" style={{ display: "flex", justifyContent: "space-between", width: "100%", marginBottom: 5 }}>
-                              <span className="budget-label">{meta.icon} {meta.label}</span>
-                              <span className="budget-amounts" style={{ fontWeight: 600 }}>{formatCurrency(spent)} / {formatCurrency(b.limit)}</span>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        {budgets.map((b) => {
+                          const meta = getCategoryMeta(b.category);
+                          const spent = expenseByCategory[b.category] ?? 0;
+                          const pct = Math.min((spent / b.limit) * 100, 100);
+                          return (
+                            <div key={b.id} className="budget-item ios-budget">
+                              <div className="budget-header" style={{ display: "flex", justifyContent: "space-between", width: "100%", marginBottom: 5 }}>
+                                <span className="budget-label">{meta.icon} {meta.label}</span>
+                                <span className="budget-amounts" style={{ fontWeight: 600 }}>{formatCurrency(spent)} / {formatCurrency(b.limit)}</span>
+                              </div>
+                              <div className="budget-bar-track ios-track">
+                                <div className="budget-bar-fill" style={{ width: `${pct}%`, background: spent > b.limit ? "#FF3B30" : pct > 75 ? "#FF9500" : "#34C759" }} />
+                              </div>
                             </div>
-                            <div className="budget-bar-track ios-track">
-                              <div className="budget-bar-fill" style={{ width: `${pct}%`, background: spent > b.limit ? "#FF3B30" : pct > 75 ? "#FF9500" : "#34C759" }} />
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
 
                     <div className="card ios-card Section">
@@ -660,13 +719,10 @@ export default function Dashboard() {
             {/* ── 2. TRANSACTIONS VIEW ── */}
             {page === "transactions" && (
               <div className="transactions-page">
-                {/* Filter & Sort Controls (Tampilan iOS Native) */}
                 <div className="ios-filter-bar" style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
-                  
-                  {/* Segmented Control untuk Filter */}
                   <div className="ios-segment-container" style={{ flex: "1 1 240px", margin: 0 }}>
                     <button className={`ios-segment-btn ${txFilter === "all" ? "active" : ""}`} onClick={() => setTxFilter("all")}>
-                      Semua
+                      {language === "id" ? "Semua" : "All"}
                     </button>
                     <button className={`ios-segment-btn income ${txFilter === "income" ? "active" : ""}`} onClick={() => setTxFilter("income")}>
                       {words.income}
@@ -676,46 +732,24 @@ export default function Dashboard() {
                     </button>
                   </div>
 
-                  {/* Dropdown Sort ala Tombol iOS */}
                   <div style={{ position: "relative", flex: "1 1 120px" }}>
                     <select
                       className="ios-sort-select"
                       value={txSort}
                       onChange={(e) => setTxSort(e.target.value as any)}
                       style={{
-                        width: "100%",
-                        padding: "10px 16px 10px 16px",
-                        borderRadius: "10px",
-                        border: "none",
-                        backgroundColor: "var(--ios-card-bg)",
-                        color: "var(--ios-text-main)",
-                        fontSize: "14px",
-                        fontWeight: 600,
-                        // Menghapus panah bawaan browser dengan cara yang lebih agresif
-                        appearance: "none", 
-                        WebkitAppearance: "none",
-                        MozAppearance: "none",
-                        backgroundImage: "none", /* KUNCI: Menghilangkan icon panah bawaan */
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-                        cursor: "pointer"
+                        width: "100%", padding: "10px 16px 10px 16px", borderRadius: "10px",
+                        border: "none", backgroundColor: "var(--ios-card-bg)", color: "var(--ios-text-main)",
+                        fontSize: "14px", fontWeight: 600,
+                        appearance: "none", WebkitAppearance: "none", MozAppearance: "none",
+                        backgroundImage: "none", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", cursor: "pointer"
                       }}
                     >
-                      <option value="newest">Urutkan: Terbaru</option>
-                      <option value="highest">Urutkan: Tertinggi</option>
-                      <option value="lowest">Urutkan: Terendah</option>
+                      <option value="newest">{words.sortNewest}</option>
+                      <option value="highest">{words.sortHighest}</option>
+                      <option value="lowest">{words.sortLowest}</option>
                     </select>
-                    
-                    {/* Ikon Panah (Chevron) Custom */}
-                    <div style={{ 
-                      position: "absolute", 
-                      right: 14, 
-                      top: "50%", 
-                      transform: "translateY(-50%)", 
-                      pointerEvents: "none", 
-                      color: "var(--ios-text-muted)",
-                      display: "flex",
-                      alignItems: "center"
-                    }}>
+                    <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "var(--ios-text-muted)", display: "flex", alignItems: "center" }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
                   </div>
@@ -765,18 +799,23 @@ export default function Dashboard() {
             {page === "analytics" && (
               <div className="analytics-page">
                 <div className="analytics-summary-grid">
+                  {/* --- KARTU PEMASUKAN --- */}
                   <div className="summary-card ios-card income">
                     <div className="summary-label">{words.income}</div>
                     <div className="summary-amount" style={{ fontSize: 24 }}>{formatCurrency(summary.totalIncome)}</div>
-                    <div className="analytics-mom-badge up">
-                      ▲ 12.4% <span className="mom-text">vs bulan lalu</span>
+                    
+                    <div className={`analytics-mom-badge ${momIncome >= 0 ? "up" : "down"}`}>
+                      {momIncome >= 0 ? "▲" : "▼"} {Math.abs(momIncome).toFixed(1)}% <span className="mom-text">{words.vsLastMonth}</span>
                     </div>
                   </div>
+
+                  {/* --- KARTU PENGELUARAN --- */}
                   <div className="summary-card ios-card expense">
                     <div className="summary-label">{words.expenses}</div>
                     <div className="summary-amount" style={{ fontSize: 24 }}>{formatCurrency(summary.totalExpense)}</div>
-                    <div className="analytics-mom-badge down">
-                      ▼ 4.8% <span className="mom-text">vs bulan lalu</span>
+                    
+                    <div className={`analytics-mom-badge ${momExpense > 0 ? "down" : "up"}`} style={{ color: momExpense > 0 ? "#FF3B30" : "#34C759", backgroundColor: momExpense > 0 ? "rgba(255,59,48,0.1)" : "rgba(52,199,89,0.1)" }}>
+                      {momExpense > 0 ? "▲" : "▼"} {Math.abs(momExpense).toFixed(1)}% <span className="mom-text">{words.vsLastMonth}</span>
                     </div>
                   </div>
                 </div>
@@ -784,7 +823,7 @@ export default function Dashboard() {
                 <div className="analytics-main-grid">
                   <div className="card ios-card section">
                     <div className="section-header">
-                      <span className="section-title">Breakdown Kategori</span>
+                      <span className="section-title">{words.categoryBreakdown}</span>
                     </div>
                     {categoryData.length > 0 ? (
                       <div className="pie-analytics-container">
@@ -795,11 +834,7 @@ export default function Dashboard() {
                                 data={categoryData} 
                                 dataKey="value" 
                                 nameKey="name" 
-                                cx="50%" 
-                                cy="50%" 
-                                innerRadius={55} 
-                                outerRadius={75} 
-                                paddingAngle={3}
+                                cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={3}
                               >
                                 {categoryData.map((_, i) => (
                                   <Cell key={i} fill={iOS_COLORS[i % iOS_COLORS.length]} />
@@ -843,13 +878,7 @@ export default function Dashboard() {
                             <span style={{ fontWeight: 600 }}>{formatCurrency(c.value)}</span>
                           </div>
                           <div className="budget-bar-track ios-track">
-                            <div 
-                              className="budget-bar-fill" 
-                              style={{ 
-                                width: `${summary.totalExpense > 0 ? (c.value / summary.totalExpense) * 100 : 0}%`, 
-                                background: iOS_COLORS[i % iOS_COLORS.length] 
-                              }} 
-                            />
+                            <div className="budget-bar-fill" style={{ width: `${summary.totalExpense > 0 ? (c.value / summary.totalExpense) * 100 : 0}%`, background: iOS_COLORS[i % iOS_COLORS.length] }} />
                           </div>
                         </div>
                       ))}
@@ -860,9 +889,9 @@ export default function Dashboard() {
                 <div className="card ios-card section" style={{ marginTop: 16 }}>
                   <div className="section-header">
                     <div>
-                      <span className="section-title">Tren Arus Kas Bulanan</span>
+                      <span className="section-title">{words.cashflowTrend}</span>
                       <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginTop: 2 }}>
-                        Melihat akumulasi bersih (Pemasukan - Pengeluaran) harian
+                        {words.cashflowDesc}
                       </div>
                     </div>
                   </div>
@@ -872,25 +901,9 @@ export default function Dashboard() {
                         <LineChart data={cashflowData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--ios-border-light)" />
                           <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#8E8E93" }} axisLine={false} tickLine={false} />
-                          <YAxis 
-                            tickFormatter={formatCompact} 
-                            tick={{ fontSize: 11, fill: "#8E8E93" }} 
-                            axisLine={false} 
-                            tickLine={false} 
-                            width={45} 
-                          />
-                          <Tooltip
-                            contentStyle={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", border: "none", borderRadius: 12, fontSize: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                            formatter={(value: any) => formatCurrency(value)}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="Net Saldo" 
-                            stroke="#007AFF" 
-                            strokeWidth={3} 
-                            dot={false}
-                            activeDot={{ r: 6, strokeWidth: 0, fill: "#007AFF" }}
-                          />
+                          <YAxis tickFormatter={formatCompact} tick={{ fontSize: 11, fill: "#8E8E93" }} axisLine={false} tickLine={false} width={45} />
+                          <Tooltip contentStyle={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", border: "none", borderRadius: 12, fontSize: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} formatter={(value: any) => formatCurrency(value)} />
+                          <Line type="monotone" dataKey="Net Saldo" stroke="#007AFF" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: "#007AFF" }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -906,33 +919,29 @@ export default function Dashboard() {
             {/* ── 4. BUDGETS VIEW ── */}
             {page === "budgets" && (
               <div className="budgets-page">
-                {/* Bagian Atas: Ringkasan Total & Tombol Tambah (Disusun Vertikal untuk Mobile) */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
-                  
-                  {/* Kartu Ringkasan Anggaran (Hanya muncul jika ada anggaran) */}
                   {budgets.length > 0 && (
                     <div className="card ios-card" style={{ padding: "16px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", width: "100%", textAlign: "center" }}>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginBottom: 4 }}>Total Anggaran</div>
+                          <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginBottom: 4 }}>{words.totalBudget}</div>
                           <div style={{ fontSize: 18, color: "var(--ios-text-main)", fontWeight: 700 }}>{formatCurrency(totalBudgetSummary.totalLimit)}</div>
                         </div>
                         <div style={{ width: 1, backgroundColor: "var(--ios-border-light)", margin: "0 16px" }} />
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginBottom: 4 }}>Total Terpakai</div>
+                          <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginBottom: 4 }}>{words.totalSpent}</div>
                           <div style={{ fontSize: 18, color: "var(--ios-danger)", fontWeight: 700 }}>{formatCurrency(totalBudgetSummary.totalSpent)}</div>
                         </div>
                       </div>
                       
                       {daysRemaining !== null && (
                         <div style={{ marginTop: 4, fontSize: 12, color: "var(--ios-text-muted)", backgroundColor: "var(--ios-bg)", padding: "4px 12px", borderRadius: 12, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                          ⏱ <span style={{ fontWeight: 500 }}>{words.remaining} {daysRemaining} hari</span>
+                          ⏱ <span style={{ fontWeight: 500 }}>{words.remaining} {daysRemaining} {language === 'en' ? 'days' : 'hari'}</span>
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Tombol Tambah Anggaran (Full Width) */}
                   <button 
                     className="btn btn-primary ios-btn-primary" 
                     style={{ width: "100%", padding: "14px", justifyContent: "center", fontSize: 16 }} 
@@ -982,7 +991,7 @@ export default function Dashboard() {
                             </div>
                             <div style={{ display: "flex", flexDirection: "column", textAlign: "right" }}>
                               <span style={{ fontSize: 11, color: "var(--ios-text-muted)", marginBottom: 2 }}>
-                                {remaining < 0 ? words.overBy : "Sisa Anggaran"}
+                                {remaining < 0 ? words.overBy : words.remainingBudget}
                               </span>
                               <span style={{ fontWeight: 600, color: remaining < 0 ? "var(--ios-danger)" : "var(--ios-text-main)" }}>
                                 {formatCurrency(Math.abs(remaining))}
@@ -996,9 +1005,9 @@ export default function Dashboard() {
                 ) : (
                   <div className="empty-state card ios-card" style={{ textAlign: "center", padding: "60px 20px" }}>
                     <div style={{ fontSize: 40, marginBottom: 16 }}>🎯</div>
-                    <div className="empty-text" style={{ color: "var(--ios-text-muted)", marginBottom: 16 }}>Belum ada anggaran yang dibuat.</div>
+                    <div className="empty-text" style={{ color: "var(--ios-text-muted)", marginBottom: 16 }}>{words.noBudget}</div>
                     <button className="btn-action-small" onClick={() => setShowBudget(true)} style={{ fontSize: 14, padding: "8px 16px" }}>
-                      Buat Anggaran Pertama
+                      {words.createFirstBudget}
                     </button>
                   </div>
                 )}
@@ -1017,7 +1026,7 @@ export default function Dashboard() {
                     }}
                     style={{ position: "absolute", top: 16, right: 16, background: "transparent", border: "none", color: "var(--ios-primary)", fontWeight: 600, cursor: "pointer", fontSize: 14 }}
                   >
-                    Edit
+                    {words.editProfile.split(" ")[0]} {/* Ambil kata pertama saja "Edit" */}
                   </button>
 
                   <div className="avatar-circle">
@@ -1074,7 +1083,7 @@ export default function Dashboard() {
                       onClick={() => setShowPasswordModal(true)} 
                       style={{ width: '100%', justifyContent: 'center' }}
                     >
-                      Ubah Password
+                      {words.changePassword}
                     </button>
                   </div>
                 </div>
@@ -1086,7 +1095,7 @@ export default function Dashboard() {
                       onClick={() => logOut()} 
                       style={{ color: '#ff3b30', width: '100%', justifyContent: 'center' }}
                     >
-                      Keluar (Logout)
+                      {words.logout}
                     </button>
                   </div>
                 </div>
@@ -1096,19 +1105,14 @@ export default function Dashboard() {
         )}
       </main>
 
-      {/* ── BOTTOM NAV MOBILE (Diatur via class CSS .smart-bottom-nav agar hilang di Desktop) ── */}
       <nav 
         className="bottom-nav ios-bottom-nav smart-bottom-nav non-printable" 
         style={{ 
-          position: "fixed",
-          bottom: 0, left: 0, right: 0,
-          justifyContent: "space-between", 
-          padding: "0 10px", 
-          alignItems: "center",
+          position: "fixed", bottom: 0, left: 0, right: 0,
+          justifyContent: "space-between", padding: "0 10px", alignItems: "center",
           backgroundColor: theme === "dark" ? "#1C1C1E" : "#FFFFFF", 
           backdropFilter: "none", WebkitBackdropFilter: "none", 
-          borderTop: "1px solid var(--ios-border-light)",
-          zIndex: 1000
+          borderTop: "1px solid var(--ios-border-light)", zIndex: 1000
         }}
       >
         <div style={{ display: "flex", flex: 1, justifyContent: "space-around" }}>
@@ -1156,162 +1160,101 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      {/* Modals Core Controls */}
-      {showAdd && (
-        <TransactionModal onClose={() => setShowAdd(false)} onSave={addTransaction} currentLang={language} />
-      )}
-
-      {editTx && (
-        <TransactionModal
-          onClose={() => setEditTx(null)}
-          onSave={(data) => updateTransaction(editTx.id, data)}
-          onDelete={deleteTransaction}
-          initial={editTx}
-          currentLang={language}
-        />
-      )}
-
-      {showBudget && (
-        <BudgetModal
-          onClose={() => setShowBudget(false)}
-          onSave={setBudget}
-          onDelete={deleteBudget}
-          budgets={budgets}
-          spentByCategory={expenseByCategory}
-          currentLang={language}
-        />
-      )}
+      {/* Modals */}
+      {showAdd && <TransactionModal onClose={() => setShowAdd(false)} onSave={addTransaction} currentLang={language} />}
+      {editTx && <TransactionModal onClose={() => setEditTx(null)} onSave={(data) => updateTransaction(editTx.id, data)} onDelete={deleteTransaction} initial={editTx} currentLang={language} />}
+      {showBudget && <BudgetModal onClose={() => setShowBudget(false)} onSave={setBudget} onDelete={deleteBudget} budgets={budgets} spentByCategory={expenseByCategory} currentLang={language} />}
 
       {/* Modal Pengaturan Cetak PDF */}
       {showExportModal && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowExportModal(false)}>
-          <div className="modal">
-            <div className="modal-header">
-              <h2 className="modal-title">Pengaturan Laporan</h2>
+        <div 
+          className="modal-overlay" 
+          onClick={(e) => e.target === e.currentTarget && setShowExportModal(false)}
+          style={{ zIndex: 2000 }}
+        >
+          <div 
+            className="modal"
+            style={{ width: "90%", maxWidth: "400px", maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: "16px", margin: "auto", padding: 0 }}
+          >
+            <div className="modal-header" style={{ flexShrink: 0, padding: "24px 24px 16px 24px", marginBottom: 0, borderBottom: "1px solid var(--ios-border-light, #eaeaea)" }}>
+              <h2 className="modal-title">{words.reportSettings}</h2>
               <button className="modal-close" onClick={() => setShowExportModal(false)}>✕</button>
             </div>
 
-            <div className="form-group" style={{ marginBottom: 20 }}>
-              <label className="form-label">Periode Laporan</label>
-              <div className="ios-segment-container" style={{ width: "100%", margin: 0 }}>
-                <button 
-                  className={`ios-segment-btn ${exportPeriod === "monthly" ? "active" : ""}`} 
-                  onClick={() => setExportPeriod("monthly")}
-                >
-                  Bulanan
-                </button>
-                <button 
-                  className={`ios-segment-btn ${exportPeriod === "custom" ? "active" : ""}`} 
-                  onClick={() => setExportPeriod("custom")}
-                >
-                  Rentang Tanggal
-                </button>
-              </div>
-            </div>
-
-            <div className="form-group" style={{ marginBottom: 24, padding: "16px", background: "var(--ios-card-bg)", borderRadius: 12, border: "1px solid var(--ios-border-light)" }}>
-              <label className="form-label" style={{ marginBottom: 12 }}>
-                {exportPeriod === "monthly" ? "Pilih Bulan Laporan" : "Pilih Tanggal Awal & Akhir"}
-              </label>
-              
-              {exportPeriod === "monthly" ? (
-                <input 
-                  type="month" 
-                  className="form-input" 
-                  style={{ width: "100%", margin: 0, height: 40, border: "none", backgroundColor: "var(--ios-input)", borderRadius: 10, padding: "0 12px" }}
-                  value={currentMonth} 
-                  onChange={(e) => setCurrentMonth(e.target.value)} 
-                />
-              ) : (
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, color: "var(--ios-text-muted)", marginBottom: 4, fontWeight: 600 }}>Mulai</div>
-                    <input 
-                      type="date" 
-                      className="form-input" 
-                      style={{ width: "100%", margin: 0, height: 40, border: "none", backgroundColor: "var(--ios-input)", borderRadius: 10, padding: "0 12px", fontSize: 13 }}
-                      value={exportStartDate} 
-                      onChange={(e) => setExportStartDate(e.target.value)} 
-                    />
-                  </div>
-                  <span style={{ color: "var(--ios-text-muted)", marginTop: 18 }}>-</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, color: "var(--ios-text-muted)", marginBottom: 4, fontWeight: 600 }}>Sampai</div>
-                    <input 
-                      type="date" 
-                      className="form-input" 
-                      style={{ width: "100%", margin: 0, height: 40, border: "none", backgroundColor: "var(--ios-input)", borderRadius: 10, padding: "0 12px", fontSize: 13 }}
-                      value={exportEndDate} 
-                      onChange={(e) => setExportEndDate(e.target.value)} 
-                    />
-                  </div>
+            <div style={{ overflowY: "auto", overflowX: "hidden", flex: 1, padding: "16px 24px 24px 24px" }}>
+              <div className="form-group" style={{ marginBottom: 20 }}>
+                <label className="form-label">{words.reportPeriod}</label>
+                <div className="ios-segment-container" style={{ width: "100%", margin: 0 }}>
+                  <button className={`ios-segment-btn ${exportPeriod === "monthly" ? "active" : ""}`} onClick={() => setExportPeriod("monthly")}>{words.monthly}</button>
+                  <button className={`ios-segment-btn ${exportPeriod === "custom" ? "active" : ""}`} onClick={() => setExportPeriod("custom")}>{words.dateRange}</button>
                 </div>
-              )}
-            </div>
-
-            <div className="form-group" style={{ marginBottom: 32 }}>
-              <label className="form-label" style={{ marginBottom: 12 }}>Konten Laporan</label>
-              <div style={{ background: "var(--ios-card-bg)", borderRadius: 12, border: "1px solid var(--ios-border-light)", overflow: "hidden" }}>
-                <label className="setting-row" style={{ cursor: "pointer", borderBottom: "1px solid var(--ios-border-light)", padding: "16px" }}>
-                  <div className="row-left" style={{ fontSize: 14 }}>📊 Analisis & Ringkasan</div>
-                  <div className="row-right">
-                    <input 
-                      type="checkbox" 
-                      className="ios-checkbox"
-                      checked={exportIncludeAnalytics}
-                      onChange={(e) => setExportIncludeAnalytics(e.target.checked)}
-                    />
-                  </div>
-                </label>
-                <label className="setting-row" style={{ cursor: "pointer", padding: "16px" }}>
-                  <div className="row-left" style={{ fontSize: 14 }}>🧾 Daftar Transaksi Rinci</div>
-                  <div className="row-right">
-                    <input 
-                      type="checkbox" 
-                      className="ios-checkbox"
-                      checked={exportIncludeTx}
-                      onChange={(e) => setExportIncludeTx(e.target.checked)}
-                    />
-                  </div>
-                </label>
               </div>
-            </div>
 
-            <button 
-              className="btn btn-primary ios-btn-primary" 
-              onClick={() => {
-                setShowExportModal(false);
-                setTimeout(() => window.print(), 300);
-              }}
-              disabled={!exportIncludeAnalytics && !exportIncludeTx}
-            >
-              Cetak PDF Sekarang
-            </button>
+              <div className="form-group" style={{ marginBottom: 24, padding: "16px", background: "var(--ios-card-bg)", borderRadius: 12, border: "1px solid var(--ios-border-light)" }}>
+                <label className="form-label" style={{ marginBottom: 12 }}>
+                  {exportPeriod === "monthly" ? words.selectReportMonth : words.selectStartEndDate}
+                </label>
+                
+                {exportPeriod === "monthly" ? (
+                  <input type="month" className="form-input" style={{ width: "100%", boxSizing: "border-box", margin: 0, height: 40, border: "none", backgroundColor: "var(--ios-input)", borderRadius: 10, padding: "0 12px" }} value={currentMonth} onChange={(e) => setCurrentMonth(e.target.value)} />
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <div>
+                      <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginBottom: 6, fontWeight: 600 }}>{words.start}</div>
+                      <input type="date" className="form-input" style={{ width: "100%", boxSizing: "border-box", margin: 0, height: 40, border: "none", backgroundColor: "var(--ios-input)", borderRadius: 10, padding: "0 12px", fontSize: 13 }} value={exportStartDate} onChange={(e) => setExportStartDate(e.target.value)} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginBottom: 6, fontWeight: 600 }}>{words.end}</div>
+                      <input type="date" className="form-input" style={{ width: "100%", boxSizing: "border-box", margin: 0, height: 40, border: "none", backgroundColor: "var(--ios-input)", borderRadius: 10, padding: "0 12px", fontSize: 13 }} value={exportEndDate} onChange={(e) => setExportEndDate(e.target.value)} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 32 }}>
+                <label className="form-label" style={{ marginBottom: 12 }}>{words.reportContent}</label>
+                <div style={{ background: "var(--ios-card-bg)", borderRadius: 12, border: "1px solid var(--ios-border-light)", overflow: "hidden" }}>
+                  <label className="setting-row" style={{ cursor: "pointer", borderBottom: "1px solid var(--ios-border-light)", padding: "16px" }}>
+                    <div className="row-left" style={{ fontSize: 14 }}>{words.analyticsSummary}</div>
+                    <div className="row-right"><input type="checkbox" className="ios-checkbox" checked={exportIncludeAnalytics} onChange={(e) => setExportIncludeAnalytics(e.target.checked)} /></div>
+                  </label>
+                  <label className="setting-row" style={{ cursor: "pointer", padding: "16px" }}>
+                    <div className="row-left" style={{ fontSize: 14 }}>{words.detailedTxList}</div>
+                    <div className="row-right"><input type="checkbox" className="ios-checkbox" checked={exportIncludeTx} onChange={(e) => setExportIncludeTx(e.target.checked)} /></div>
+                  </label>
+                </div>
+              </div>
+
+              <button className="btn btn-primary ios-btn-primary" onClick={() => { setShowExportModal(false); setTimeout(() => window.print(), 300); }} disabled={!exportIncludeAnalytics && !exportIncludeTx}>
+                {words.printPdfNow}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Modal Edit Profil */}
       {showProfileModal && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowProfileModal(false)}>
+        <div 
+          className="modal-overlay" 
+          onClick={(e) => e.target === e.currentTarget && setShowProfileModal(false)}
+          style={{ zIndex: 2000 }} /* 👇 TAMBAHKAN INI AGAR MENUTUPI HEADER 👇 */
+        >
           <div className="modal">
             <div className="modal-header">
-              <h2 className="modal-title">Edit Profil</h2>
+              <h2 className="modal-title">{words.editProfile}</h2>
               <button className="modal-close" onClick={() => setShowProfileModal(false)}>✕</button>
             </div>
             <div className="form-group">
-              <label className="form-label">Nama Lengkap</label>
+              <label className="form-label">{words.fullName}</label>
               <input className="form-input" type="text" value={tempName} onChange={(e) => setTempName(e.target.value)} />
             </div>
             <div className="form-group" style={{ marginBottom: 24 }}>
-              <label className="form-label">Bio / Pekerjaan</label>
+              <label className="form-label">{words.bioJob}</label>
               <input className="form-input" type="text" value={tempBio} onChange={(e) => setTempBio(e.target.value)} />
             </div>
-            <button 
-              className="btn btn-primary ios-btn-primary" 
-              onClick={() => { setUserName(tempName); setUserBio(tempBio); setShowProfileModal(false); }}
-            >
-              Simpan Profil
+            <button className="btn btn-primary ios-btn-primary" onClick={() => { setUserName(tempName); setUserBio(tempBio); setShowProfileModal(false); }}>
+              {words.saveProfile}
             </button>
           </div>
         </div>
@@ -1319,21 +1262,22 @@ export default function Dashboard() {
 
       {/* Modal Password */}
       {showPasswordModal && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowPasswordModal(false)}>
+        <div 
+          className="modal-overlay" 
+          onClick={(e) => e.target === e.currentTarget && setShowPasswordModal(false)}
+          style={{ zIndex: 2000 }} /* 👇 TAMBAHKAN INI AGAR MENUTUPI HEADER 👇 */
+        >
           <div className="modal">
             <div className="modal-header">
-              <h2 className="modal-title">Ubah Password</h2>
+              <h2 className="modal-title">{words.changePassword}</h2>
               <button className="modal-close" onClick={() => setShowPasswordModal(false)}>✕</button>
             </div>
             <div className="form-group" style={{ marginBottom: 20 }}>
-              <label className="form-label">Password Baru</label>
-              <input 
-                className="form-input" type="password" placeholder="Masukkan password baru"
-                value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-              />
+              <label className="form-label">{words.newPassword}</label>
+              <input className="form-input" type="password" placeholder={words.enterNewPassword} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
             </div>
             <button className="btn btn-primary ios-btn-primary" onClick={handleChangePassword}>
-              Simpan Password
+              {words.savePassword}
             </button>
           </div>
         </div>
@@ -1342,28 +1286,26 @@ export default function Dashboard() {
       {/* KANVAS RAHASIA UNTUK CETAK PDF */}
       <div className="print-only-canvas">
         <div style={{ textAlign: "center", marginBottom: 30, borderBottom: "2px solid #000", paddingBottom: 16 }}>
-          <h1 style={{ margin: 0, fontSize: 24 }}>Laporan Keuangan MoFlow</h1>
+          <h1 style={{ margin: 0, fontSize: 24 }}>{words.financialReport}</h1>
           <p style={{ margin: "8px 0 0 0", color: "#666" }}>
-            Periode: {exportPeriod === "monthly" 
-              ? monthLabel 
-              : `${format(new Date(exportStartDate), "dd MMM yyyy")} - ${format(new Date(exportEndDate), "dd MMM yyyy")}`}
+            {words.period}: {exportPeriod === "monthly" ? monthLabel : `${format(new Date(exportStartDate), "dd MMM yyyy")} - ${format(new Date(exportEndDate), "dd MMM yyyy")}`}
           </p>
         </div>
 
         {exportIncludeAnalytics && (
           <div style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 18, marginBottom: 12 }}>Ringkasan Arus Kas</h2>
+            <h2 style={{ fontSize: 18, marginBottom: 12 }}>{words.cashflowSummary}</h2>
             <div style={{ display: "flex", gap: 16 }}>
               <div className="card ios-card" style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, color: "#666" }}>Total Pemasukan</div>
+                <div style={{ fontSize: 14, color: "#666" }}>{words.totalIncome}</div>
                 <div style={{ fontSize: 20, fontWeight: "bold", color: "#34C759" }}>{formatCurrency(exportSummary.income)}</div>
               </div>
               <div className="card ios-card" style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, color: "#666" }}>Total Pengeluaran</div>
+                <div style={{ fontSize: 14, color: "#666" }}>{words.totalExpense}</div>
                 <div style={{ fontSize: 20, fontWeight: "bold", color: "#FF3B30" }}>{formatCurrency(exportSummary.expense)}</div>
               </div>
               <div className="card ios-card" style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, color: "#666" }}>Surplus / Defisit</div>
+                <div style={{ fontSize: 14, color: "#666" }}>{words.surplusDeficit}</div>
                 <div style={{ fontSize: 20, fontWeight: "bold", color: exportSummary.balance >= 0 ? "#007AFF" : "#FF3B30" }}>
                   {formatCurrency(exportSummary.balance)}
                 </div>
@@ -1374,14 +1316,14 @@ export default function Dashboard() {
 
         {exportIncludeTx && (
           <div>
-            <h2 style={{ fontSize: 18, marginBottom: 12 }}>Daftar Transaksi Rinci</h2>
+            <h2 style={{ fontSize: 18, marginBottom: 12 }}>{words.detailedTxList}</h2>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid #ddd", textAlign: "left" }}>
-                  <th style={{ padding: "8px 4px" }}>Tanggal</th>
-                  <th style={{ padding: "8px 4px" }}>Kategori</th>
-                  <th style={{ padding: "8px 4px" }}>Catatan</th>
-                  <th style={{ padding: "8px 4px", textAlign: "right" }}>Nominal</th>
+                  <th style={{ padding: "8px 4px" }}>{words.colDate}</th>
+                  <th style={{ padding: "8px 4px" }}>{words.colCategory}</th>
+                  <th style={{ padding: "8px 4px" }}>{words.colNote}</th>
+                  <th style={{ padding: "8px 4px", textAlign: "right" }}>{words.colAmount}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1406,7 +1348,7 @@ export default function Dashboard() {
         )}
         
         <div style={{ textAlign: "center", marginTop: 40, fontSize: 12, color: "#999" }}>
-          Dicetak secara otomatis dari sistem MoFlow pada {format(new Date(), "dd MMMM yyyy HH:mm")}
+          {words.printedAutomatically} {format(new Date(), "dd MMMM yyyy HH:mm")}
         </div>
       </div>
     </div>

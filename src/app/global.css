@@ -372,7 +372,7 @@ html, body {
 .ios-btn-secondary { background: var(--ios-input); color: var(--ios-primary); }
 
 .ios-month-nav {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 0px;
   background: var(--ios-card-bg);
   padding: 4px;
   border-radius: var(--radius-md);
@@ -1180,4 +1180,48 @@ html, body {
   .mobile-only-logo {
     display: none !important;
   }
+}
+
+.category-grid {
+  display: grid;
+  /* Membagi otomatis menjadi 3 atau 4 kolom proporsional tergantung lebar */
+  grid-template-columns: repeat(auto-fit, minmax(75px, 1fr)); 
+  gap: 12px;
+  width: 100%;
+}
+
+.category-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid #eaeaea;
+  background-color: #ffffff; /* <-- Ubah dari transparent menjadi #ffffff */
+  color: #333333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.category-label {
+  font-size: 11px; /* Dikecilkan sedikit agar muat di mobile */
+  margin-top: 8px;
+  text-align: center;
+  word-wrap: break-word;
+  line-height: 1.2;
+}
+
+.category-btn.active {
+  background-color: #f0f7ff; /* Latar belakang biru sangat muda */
+  border-color: #007aff;     /* Garis tepi biru khas aplikasi */
+  color: #007aff;            /* Warna teks menjadi biru */
+}
+
+.category-btn.active svg {
+  fill: #007aff;
+  color: #007aff;
 }

@@ -5,7 +5,9 @@ import { AuthProvider } from "@/context/AuthContext";
 export const metadata: Metadata = {
   title: "MoFlow — Money Tracker",
   description: "Personal finance tracker with Firebase",
-  // Hapus baris viewport dari sini
+  icons: {
+    icon: "/favicon.ico", // Pastikan file favicon.ico baru Anda ada di folder /public
+  },
 };
 
 // Tambahkan export baru untuk viewport
