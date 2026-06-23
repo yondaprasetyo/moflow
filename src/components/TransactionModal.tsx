@@ -198,6 +198,19 @@ export default function TransactionModal({ onClose, onSave, onDelete, initial, c
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              style={{
+                WebkitAppearance: "none", // Mereset styling bawaan iOS
+                display: "block",
+                width: "100%",
+                minHeight: "44px", // Standar area sentuh Apple
+                boxSizing: "border-box",
+                padding: "10px 12px",
+                backgroundColor: "var(--ios-input)",
+                border: "none",
+                borderRadius: "10px",
+                color: "inherit",
+                fontFamily: "inherit"
+              }}
             />
           </div>
 

@@ -1196,16 +1196,75 @@ export default function Dashboard() {
                 </label>
                 
                 {exportPeriod === "monthly" ? (
-                  <input type="month" className="form-input" style={{ width: "100%", boxSizing: "border-box", margin: 0, height: 40, border: "none", backgroundColor: "var(--ios-input)", borderRadius: 10, padding: "0 12px" }} value={currentMonth} onChange={(e) => setCurrentMonth(e.target.value)} />
+                  <input 
+                    type="month" 
+                    className="form-input" 
+                    style={{ 
+                      WebkitAppearance: "none",
+                      display: "block",
+                      width: "100%", 
+                      minHeight: "44px",
+                      boxSizing: "border-box", 
+                      margin: 0, 
+                      border: "none", 
+                      backgroundColor: "var(--ios-input)", 
+                      borderRadius: "10px", 
+                      padding: "10px 12px",
+                      color: "inherit",
+                      fontFamily: "inherit"
+                    }} 
+                    value={currentMonth} 
+                    onChange={(e) => setCurrentMonth(e.target.value)} 
+                  />
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     <div>
                       <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginBottom: 6, fontWeight: 600 }}>{words.start}</div>
-                      <input type="date" className="form-input" style={{ width: "100%", boxSizing: "border-box", margin: 0, height: 40, border: "none", backgroundColor: "var(--ios-input)", borderRadius: 10, padding: "0 12px", fontSize: 13 }} value={exportStartDate} onChange={(e) => setExportStartDate(e.target.value)} />
+                      <input 
+                        type="date" 
+                        className="form-input" 
+                        style={{ 
+                          WebkitAppearance: "none",
+                          display: "block",
+                          width: "100%", 
+                          minHeight: "44px",
+                          boxSizing: "border-box", 
+                          margin: 0, 
+                          border: "none", 
+                          backgroundColor: "var(--ios-input)", 
+                          borderRadius: "10px", 
+                          padding: "10px 12px", 
+                          fontSize: "13px",
+                          color: "inherit",
+                          fontFamily: "inherit"
+                        }} 
+                        value={exportStartDate} 
+                        onChange={(e) => setExportStartDate(e.target.value)} 
+                      />
                     </div>
                     <div>
                       <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginBottom: 6, fontWeight: 600 }}>{words.end}</div>
-                      <input type="date" className="form-input" style={{ width: "100%", boxSizing: "border-box", margin: 0, height: 40, border: "none", backgroundColor: "var(--ios-input)", borderRadius: 10, padding: "0 12px", fontSize: 13 }} value={exportEndDate} onChange={(e) => setExportEndDate(e.target.value)} />
+                      <input 
+                        type="date" 
+                        className="form-input" 
+                        style={{ 
+                          WebkitAppearance: "none",
+                          display: "block",
+                          width: "100%", 
+                          minHeight: "44px",
+                          boxSizing: "border-box", 
+                          margin: 0, 
+                          border: "none", 
+                          backgroundColor: "var(--ios-input)", 
+                          borderRadius: "10px", 
+                          padding: "10px 12px", 
+                          fontSize: "13px",
+                          color: "inherit",
+                          fontFamily: "inherit"
+                        }} 
+                        value={exportEndDate} 
+                        onChange={(e) => setExportEndDate(e.target.value)} 
+                      />
                     </div>
                   </div>
                 )}
