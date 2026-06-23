@@ -223,6 +223,8 @@ export default function Dashboard() {
   const [currency, setCurrency] = useState<Currency>("IDR");
   const [txFilter, setTxFilter] = useState<"all" | "income" | "expense">("all");
   const [txSort, setTxSort] = useState<"newest" | "highest" | "lowest">("newest");
+  const [txSearch, setTxSearch] = useState("");
+  const [txCategoryFilter, setTxCategoryFilter] = useState("all");
   
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportPeriod, setExportPeriod] = useState<"monthly" | "custom">("monthly");
@@ -340,6 +342,18 @@ export default function Dashboard() {
     if (txFilter !== "all") {
       filtered = filtered.filter((t) => t.type === txFilter);
     }
+    
+    if (txCategoryFilter !== "all") {
+      filtered = filtered.filter((t) => t.category === txCategoryFilter);
+    }
+
+    if (txSearch.trim() !== "") {
+      const query = txSearch.toLowerCase();
+      filtered = filtered.filter((t) => 
+        t.note.toLowerCase().includes(query) || 
+        getCategoryMeta(t.category).label.toLowerCase().includes(query)
+      );
+    }
 
     const groups: Record<string, { date: string; items: Transaction[]; totalIn: number; totalOut: number }> = {};
     filtered.forEach((t) => {
@@ -360,7 +374,7 @@ export default function Dashboard() {
     });
 
     return groupedArray;
-  }, [transactions, txFilter, txSort]);
+  }, [transactions, txFilter, txSort, txCategoryFilter, txSearch, getCategoryMeta]);
 
   const categoryData = useMemo(() => {
     return Object.entries(summary.byCategory)
@@ -425,6 +439,87 @@ export default function Dashboard() {
       return txDate >= start && txDate <= end;
     });
   }, [transactions, exportPeriod, exportStartDate, exportEndDate]);
+
+  // --- SMART INSIGHTS / ASISTEN KEUANGAN ---
+  const smartInsight = useMemo(() => {
+    if (transactions.length === 0) {
+      return { 
+        text: language === 'id' ? "Belum ada transaksi bulan ini. Yuk, mulai catat keuanganmu!" : "No transactions this month. Let's record now!", 
+        icon: "👋", 
+        type: "neutral" 
+      };
+    }
+
+    // Cek Anggaran (Paling krusial untuk diperingatkan)
+    if (totalBudgetSummary.totalLimit > 0) {
+      const budgetUsedPct = (totalBudgetSummary.totalSpent / totalBudgetSummary.totalLimit) * 100;
+      if (budgetUsedPct >= 90) {
+        return { 
+          text: language === 'id' ? `Awas! Pengeluaranmu sudah mencapai ${Math.round(budgetUsedPct)}% dari total anggaran bulan ini. Rem sekarang!` : `Watch out! You've spent ${Math.round(budgetUsedPct)}% of your total budget.`, 
+          icon: "🚨", 
+          type: "danger" 
+        };
+      } else if (budgetUsedPct >= 75) {
+        return { 
+          text: language === 'id' ? `Hati-hati, kamu sudah memakai ${Math.round(budgetUsedPct)}% dari anggaran. Tetap terkendali, ya.` : `Careful, spending has reached ${Math.round(budgetUsedPct)}% of your budget.`, 
+          icon: "⚠️", 
+          type: "warning" 
+        };
+      }
+    }
+
+    // Cek Besar Pasak daripada Tiang
+    if (summary.totalExpense > summary.totalIncome && summary.totalIncome > 0) {
+      return { 
+        text: language === 'id' ? "Pengeluaranmu melebihi pemasukan bulan ini. Yuk, evaluasi lagi pengeluaran terbesarmu!" : "Your expenses exceed your income this month. Let's evaluate!", 
+        icon: "📉", 
+        type: "danger" 
+      };
+    }
+
+    // Cek Tabungan Sehat
+    if (savingsRate >= 20) {
+      return { 
+        text: language === 'id' ? `Keren! Rasio tabunganmu sangat sehat di angka ${savingsRate}%. Pertahankan!` : `Awesome! Your savings rate is very healthy at ${savingsRate}%.`, 
+        icon: "🌟", 
+        type: "success" 
+      };
+    }
+
+    // Default jika semua aman
+    return { 
+      text: language === 'id' ? "Arus kas bulan ini terpantau stabil. Terus pantau transaksimu!" : "Your cashflow looks stable this month. Keep tracking!", 
+      icon: "💡", 
+      type: "primary" 
+    };
+  }, [transactions.length, totalBudgetSummary, summary, savingsRate, language]);
+
+  // --- ANALISIS KEBIASAAN (TOP NOTES) ---
+  const topNotesData = useMemo(() => {
+    // Objek untuk mengelompokkan catatan transaksi
+    const notesMap: Record<string, { note: string; amount: number; count: number; category: string }> = {};
+
+    transactions.forEach((t) => {
+      // Kita hanya peduli pada pengeluaran yang punya catatan
+      if (t.type === "expense" && t.note) {
+        const rawNote = t.note.trim();
+        const key = rawNote.toLowerCase(); // Samakan huruf besar/kecil agar "Warteg" dan "warteg" terhitung sama
+
+        if (!key) return;
+
+        if (!notesMap[key]) {
+          notesMap[key] = { note: rawNote, amount: 0, count: 0, category: t.category };
+        }
+        notesMap[key].amount += t.amount;
+        notesMap[key].count += 1; // Menghitung seberapa sering transaksi ini terjadi
+      }
+    });
+
+    // Ubah ke array, urutkan dari yang nominalnya paling besar, dan ambil top 5
+    return Object.values(notesMap)
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5);
+  }, [transactions]);
 
   const exportSummary = useMemo(() => {
     let income = 0;
@@ -586,6 +681,32 @@ export default function Dashboard() {
             {/* ── 1. DASHBOARD VIEW ── */}
             {page === "dashboard" && (
               <>
+                {/* BANNER SMART INSIGHT */}
+                <div className="card ios-card" style={{
+                  marginBottom: 16,
+                  padding: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  backgroundColor: 
+                    smartInsight.type === "danger" ? "rgba(255, 59, 48, 0.1)" :
+                    smartInsight.type === "warning" ? "rgba(255, 149, 0, 0.1)" :
+                    smartInsight.type === "success" ? "rgba(52, 199, 89, 0.1)" :
+                    "rgba(0, 122, 255, 0.1)",
+                  border: `1px solid ${
+                    smartInsight.type === "danger" ? "rgba(255, 59, 48, 0.3)" :
+                    smartInsight.type === "warning" ? "rgba(255, 149, 0, 0.3)" :
+                    smartInsight.type === "success" ? "rgba(52, 199, 89, 0.3)" :
+                    "rgba(0, 122, 255, 0.3)"
+                  }`
+                }}>
+                  <div style={{ fontSize: "28px" }}>{smartInsight.icon}</div>
+                  <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--ios-text-main)", lineHeight: 1.4 }}>
+                    {smartInsight.text}
+                  </div>
+                </div>
+
+                {/* GRID BAWAAN */}
                 <div className="summary-grid">
                   <div className="summary-card ios-card income">
                     <div className="summary-label">{words.income}</div>
@@ -755,6 +876,30 @@ export default function Dashboard() {
                   </div>
                 </div>
 
+                <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+                  {/* Kolom Pencarian */}
+                  <input 
+                    type="text" 
+                    placeholder={language === "id" ? "Cari catatan..." : "Search notes..."}
+                    value={txSearch}
+                    onChange={(e) => setTxSearch(e.target.value)}
+                    className="form-input"
+                    style={{ flex: 1, height: 40, border: "none", backgroundColor: "var(--ios-card-bg)", borderRadius: 10, padding: "0 12px", outline: "none" }}
+                  />
+                  
+                  {/* Dropdown Kategori */}
+                  <select 
+                    value={txCategoryFilter}
+                    onChange={(e) => setTxCategoryFilter(e.target.value)}
+                    style={{ flex: 1, height: 40, border: "none", backgroundColor: "var(--ios-card-bg)", borderRadius: 10, padding: "0 12px", outline: "none", WebkitAppearance: "none" }}
+                  >
+                    <option value="all">{language === "id" ? "Semua Kategori" : "All Categories"}</option>
+                    {Object.keys(CATEGORY_META).map(key => (
+                      <option key={key} value={key}>{getCategoryMeta(key).label}</option>
+                    ))}
+                  </select>
+                </div>
+
                 {processedTransactions.length > 0 ? (
                   processedTransactions.map((group) => (
                     <div key={group.date} className="card ios-card" style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
@@ -886,6 +1031,54 @@ export default function Dashboard() {
                   </div>
                 </div>
 
+                {/* --- ANALISIS KEBIASAAN (TOP NOTES) --- */}
+                <div className="card ios-card section" style={{ marginTop: 16 }}>
+                  <div className="section-header" style={{ marginBottom: 16 }}>
+                    <div>
+                      <span className="section-title">
+                        {language === "id" ? "Kebiasaan Pengeluaran" : "Top Spending Habits"}
+                      </span>
+                      <div style={{ fontSize: 12, color: "var(--ios-text-muted)", marginTop: 2 }}>
+                        {language === "id" ? "Pengeluaran terbesar berdasarkan catatan spesifik" : "Largest expenses based on specific notes"}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    {topNotesData.length > 0 ? topNotesData.map((item, i) => {
+                      const meta = getCategoryMeta(item.category);
+                      return (
+                        <div key={i}>
+                          <div style={{ display: "flex", justifyContent: "space-between", width: "100%", fontSize: 13, marginBottom: 5 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <span style={{ fontSize: "18px" }}>{meta.icon}</span>
+                              <div style={{ display: "flex", flexDirection: "column" }}>
+                                <span style={{ fontWeight: 600 }}>{item.note}</span>
+                                <span style={{ fontSize: 11, color: "var(--ios-text-muted)" }}>
+                                  {item.count} {language === "id" ? "kali transaksi" : "transactions"}
+                                </span>
+                              </div>
+                            </div>
+                            <span style={{ fontWeight: 600, color: "var(--ios-danger)" }}>
+                              {formatCurrency(item.amount)}
+                            </span>
+                          </div>
+                          <div className="budget-bar-track ios-track">
+                            <div className="budget-bar-fill" style={{ 
+                              width: `${summary.totalExpense > 0 ? (item.amount / summary.totalExpense) * 100 : 0}%`, 
+                              background: "#FF3B30" 
+                            }} />
+                          </div>
+                        </div>
+                      );
+                    }) : (
+                      <div className="empty-text" style={{ color: "var(--ios-text-muted)", textAlign: "center", padding: "10px 0" }}>
+                        {words.noTransactions}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="card ios-card section" style={{ marginTop: 16 }}>
                   <div className="section-header">
                     <div>
@@ -958,6 +1151,9 @@ export default function Dashboard() {
                       const spent = expenseByCategory[b.category] ?? 0;
                       const pct = Math.min((spent / b.limit) * 100, 100);
                       const remaining = b.limit - spent;
+                      const safeToSpend = daysRemaining && daysRemaining > 0 && remaining > 0 
+                        ? remaining / daysRemaining 
+                        : 0;
                       
                       let barColor = "#34C759";
                       if (pct >= 90) barColor = "#FF3B30";
@@ -996,6 +1192,11 @@ export default function Dashboard() {
                               <span style={{ fontWeight: 600, color: remaining < 0 ? "var(--ios-danger)" : "var(--ios-text-main)" }}>
                                 {formatCurrency(Math.abs(remaining))}
                               </span>
+                              {safeToSpend > 0 && (
+                                <span style={{ fontSize: 11, color: "var(--ios-success)", marginTop: 4 }}>
+                                  Batas: {formatCurrency(safeToSpend)} / hari
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
